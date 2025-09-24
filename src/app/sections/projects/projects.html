@@ -1,0 +1,16 @@
+<section id="projects" class="projects">
+  <div class="container">
+    <h2>Projects</h2>
+    <div class="grid" *ngIf="data.projects$ | async as items">
+      <article class="card" *ngFor="let p of items">
+        <h3>{{ p.title }}</h3>
+        <p>{{ p.description }}</p>
+        <div class="tags">
+          <span class="badge" *ngFor="let t of p.techStack">{{ t }}</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+

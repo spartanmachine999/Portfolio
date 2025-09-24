@@ -1,0 +1,28 @@
+<section id="skills" class="skills">
+  <div class="container">
+    <h2>Skills & Competencies</h2>
+
+    <div class="group">
+      <h3>Core Skills</h3>
+      <div class="badges" *ngIf="data.coreSkills$ | async as core">
+        <span class="badge" *ngFor="let s of core">{{ s }}</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Technical Tools</h3>
+      <div class="badges" *ngIf="data.technicalTools$ | async as tools">
+        <span class="badge" *ngFor="let s of tools">{{ s }}</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Soft Skills</h3>
+      <div class="badges" *ngIf="data.softSkills$ | async as soft">
+        <span class="badge" *ngFor="let s of soft">{{ s }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+

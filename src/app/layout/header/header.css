@@ -1,0 +1,34 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: saturate(180%) blur(8px);
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 25px;
+}
+.brand { font-weight: 700; }
+.links { display: flex; gap: 16px; }
+.links a {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--accent-color);
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.links a:hover, .links a:focus-visible {
+  background: rgba(34, 211, 238, 0.08);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--accent-color) inset;
+}
+
+@media (max-width: 640px) {
+  .links { gap: 8px; }
+  .links a { padding: 6px 8px; }
+}
+
+

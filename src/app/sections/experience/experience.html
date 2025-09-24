@@ -1,0 +1,16 @@
+<section id="experience" class="experience">
+  <div class="container">
+    <h2>Experience</h2>
+    <div class="list" *ngIf="data.experience$ | async as items">
+      <article class="card" *ngFor="let item of items">
+        <h3>{{ item.role }} <span class="at">@ {{ item.company }}</span></h3>
+        <p class="duration">{{ item.duration }}</p>
+        <ul>
+          <li *ngFor="let line of item.description">{{ line }}</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+

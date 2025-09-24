@@ -1,0 +1,14 @@
+.skills .group { margin-top: 20px; }
+.skills .badges { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.skills .badges .badge {
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.skills .badges .badge:hover {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
+
+

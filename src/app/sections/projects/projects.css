@@ -1,0 +1,22 @@
+.projects .grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .projects .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.projects .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.projects .card {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.projects .card:hover {
+  box-shadow: 0 0 12px -2px var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+.projects .tags .badge { background: color-mix(in srgb, var(--accent-color) 12%, transparent); }
+
+

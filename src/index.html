@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MohakSaxenaPortfolio</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <canvas id="asteroidCanvas"></canvas>
+  <div class="asteroid-container"></div>
+
+<script>
+  function createAsteroid() {
+    const asteroid = document.createElement('div');
+    asteroid.classList.add('asteroid');
+
+    const size = Math.random() * 3 + 2; // 2px to 5px width
+    const length = Math.random() * 80 + 60; // 60px to 140px height
+    const duration = Math.random() * 1 + 0.8; // 0.8s to 1.8s
+
+    asteroid.style.width = `${size}px`;
+    asteroid.style.height = `${length}px`;
+    asteroid.style.left = `${Math.random() * window.innerWidth}px`;
+    asteroid.style.animationDuration = `${duration}s`;
+
+    document.querySelector('.asteroid-container').appendChild(asteroid);
+
+    setTimeout(() => {
+      asteroid.remove();
+    }, duration * 1000);
+  }
+
+  setInterval(createAsteroid, 300); // More frequent: every 300ms
+</script>
+
+  <app-root></app-root>
+  <script>
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    document.body.style.backgroundPosition = `center ${scrollY * 0.2}px`;
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+.experience .list { display: grid; gap: 16px; }
+.experience .duration { color: var(--text-secondary); }
+.experience .at { color: var(--text-secondary); font-weight: 600; }
+.experience ul { margin: 8px 0 0 20px; padding: 0; }
+
+/* Optional subtle divider look for timeline-like separation */
+.experience .card {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+}
+
+
