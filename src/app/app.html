@@ -1,15 +1,13 @@
 <a class="skip-link" href="#about">Skip to content</a>
 
 <app-starfield />
+<app-doodle-canvas />
 <app-scroll-progress />
 <app-cursor />
 <span class="crt-band" aria-hidden="true"></span>
 
 <!-- CRT power-off overlay. ThemeService drives this on every theme change. -->
 <div class="crt-shutdown" aria-hidden="true"><span class="crt-line"></span></div>
-
-<!-- Portal swirl for the random-section hop. -->
-<div class="portal-fx" [class.go]="ui.portalActive()" aria-hidden="true"></div>
 
 <!-- Original stick-figure doodles. Only visible in doodle mode. -->
 <svg class="doodle-art d1" viewBox="0 0 60 80" fill="none" stroke="currentColor"
@@ -56,6 +54,20 @@
   <span class="fab-rock emoji" aria-hidden="true"></span>
   <span class="fab-pulse" aria-hidden="true"></span>
 </button>
+
+<!-- Only rendered while floating: the page is scroll-locked then, so there has
+     to be an obvious, always-reachable way to put everything back. -->
+@if (float.active()) {
+  <button
+    type="button"
+    class="float-toggle"
+    (click)="float.toggle()"
+    aria-label="Restore gravity and put everything back"
+  >
+    <span class="emoji" aria-hidden="true">🧹</span>
+    <span>Put it back</span>
+  </button>
+}
 
 @if (ui.toast()) {
   <div class="toast" [class.out]="ui.toastLeaving()" role="status" aria-live="polite">

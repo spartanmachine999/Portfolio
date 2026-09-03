@@ -8,6 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
+import { DoodleService } from '../../services/doodle.service';
+import { FloatService } from '../../services/float.service';
 import { ThemeService, ThemeMode } from '../../services/theme.service';
 import { UiService } from '../../services/ui.service';
 import { WeatherService } from '../../services/weather.service';
@@ -36,6 +38,8 @@ export class ControlDockComponent implements OnInit, OnDestroy {
   private readonly audio = inject(AudioService);
   protected readonly ui = inject(UiService);
   protected readonly weather = inject(WeatherService);
+  protected readonly float = inject(FloatService);
+  protected readonly doodleStore = inject(DoodleService);
 
   readonly open = signal(false);
   readonly now = signal(new Date());
@@ -89,7 +93,6 @@ export class ControlDockComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // One tick a second. The only thing it re-renders is the clock block.
     this.timer = window.setInterval(() => this.now.set(new Date()), 1000);
-    this.weather.load();
   }
 
   ngOnDestroy(): void {
@@ -97,7 +100,22 @@ export class ControlDockComponent implements OnInit, OnDestroy {
   }
 
   toggleOpen(): void {
-    this.open.update((v) => !v);
+    const opening = !this.open();
+    this.open.set(opening);
+    this.audio.play('click');
+
+    // Ask for location only when the panel is actually opened. Prompting on
+    // page load would be hostile, and this click is a real user gesture.
+    if (opening) this.weather.request();
+  }
+
+  toggleFloat(): void {
+    this.float.toggle();
+    this.audio.play(this.float.active() ? 'levelup' : 'click');
+  }
+
+  clearDoodles(): void {
+    this.doodleStore.clear();
     this.audio.play('click');
   }
 

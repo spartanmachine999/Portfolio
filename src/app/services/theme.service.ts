@@ -147,12 +147,11 @@ export class ThemeService {
   /**
    * Accent as an `r, g, b` triple, for canvas work that needs alpha.
    *
-   * Doodle mode overrides --accent in CSS, but the canvas reads its colour from
-   * here rather than from computed styles — so this has to honour the skin too,
-   * otherwise the background stays the old colour while the UI turns yellow.
+   * Doodle mode no longer overrides this: chalk and the board now take their
+   * colour from whichever theme is active, so the skin works with all six
+   * palettes instead of forcing one yellow.
    */
   accentRgb(): string {
-    if (this.doodle()) return '246, 226, 122';
     switch (this.mode()) {
       case 'cyber':
         return '0, 229, 255';
@@ -171,7 +170,6 @@ export class ThemeService {
 
   /** Secondary tone used for constellation lines and meteor cores. */
   accentAltRgb(): string {
-    if (this.doodle()) return '253, 243, 192';
     switch (this.mode()) {
       case 'cyber':
         return '120, 255, 240';

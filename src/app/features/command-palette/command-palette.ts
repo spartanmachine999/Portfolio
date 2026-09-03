@@ -9,6 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
+import { DoodleService } from '../../services/doodle.service';
+import { FloatService } from '../../services/float.service';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService, ThemeMode } from '../../services/theme.service';
 import { UiService } from '../../services/ui.service';
@@ -42,6 +44,8 @@ export class CommandPaletteComponent {
   private readonly theme = inject(ThemeService);
   private readonly audio = inject(AudioService);
   private readonly ui = inject(UiService);
+  private readonly float = inject(FloatService);
+  private readonly doodleStore = inject(DoodleService);
   private readonly data = inject(PortfolioDataService);
   private readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
 
@@ -122,11 +126,19 @@ export class CommandPaletteComponent {
       run: () => this.ui.openSynth(),
     },
     {
-      id: 'portal',
-      label: 'Portal Hop',
+      id: 'float',
+      label: 'Turn Off Gravity',
       group: 'Fun',
-      keywords: 'portal random teleport jump dimension warp surprise',
-      run: () => this.ui.portalHop(),
+      hint: 'F',
+      keywords: 'gravity float weightless physics space drift throw drag chaos',
+      run: () => this.float.toggle(),
+    },
+    {
+      id: 'cleardoodle',
+      label: 'Wipe the Board',
+      group: 'Fun',
+      keywords: 'clear erase doodle chalk drawing reset wipe',
+      run: () => this.doodleStore.clear(),
     },
     {
       id: 'resume',

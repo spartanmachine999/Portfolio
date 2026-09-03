@@ -4,12 +4,14 @@ import { AsteroidGameComponent } from './features/asteroid-game/asteroid-game';
 import { CommandPaletteComponent } from './features/command-palette/command-palette';
 import { ControlDockComponent } from './features/control-dock/control-dock';
 import { CursorComponent } from './features/cursor/cursor';
+import { DoodleCanvasComponent } from './features/doodle-canvas/doodle-canvas';
 import { ScrollProgressComponent } from './features/scroll-progress/scroll-progress';
 import { StarfieldComponent } from './features/starfield/starfield';
 import { SynthPadComponent } from './features/synth-pad/synth-pad';
 import { FooterComponent } from './layout/footer/footer';
 import { HeaderComponent } from './layout/header/header';
 import { AudioService } from './services/audio.service';
+import { FloatService } from './services/float.service';
 import { ThemeService } from './services/theme.service';
 import { UiService } from './services/ui.service';
 
@@ -33,6 +35,7 @@ const KONAMI = [
   imports: [
     RouterOutlet,
     StarfieldComponent,
+    DoodleCanvasComponent,
     ScrollProgressComponent,
     CursorComponent,
     HeaderComponent,
@@ -47,6 +50,7 @@ const KONAMI = [
 })
 export class App implements OnInit {
   protected readonly ui = inject(UiService);
+  protected readonly float = inject(FloatService);
   private readonly theme = inject(ThemeService);
   private readonly audio = inject(AudioService);
 
@@ -63,8 +67,16 @@ export class App implements OnInit {
     }
     if (seen) return;
 
+    // Touch visitors have no Ctrl key, so point them at the dock instead.
+    const touch =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(hover: none) and (pointer: coarse)').matches;
+
     window.setTimeout(() => {
-      this.ui.showToast('Press Ctrl+K to explore \u{1F52E}', 6000);
+      this.ui.showToast(
+        touch ? 'Tap the clock \u2014 there\u2019s a lot hidden \u{1F52E}' : 'Press Ctrl+K to explore \u{1F52E}',
+        6000,
+      );
       try {
         sessionStorage.setItem('ms-hinted', '1');
       } catch {
@@ -86,7 +98,24 @@ export class App implements OnInit {
     }
 
     if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+    // Escape is a universal way out, handled before any overlay guard below.
+    // The palette's own handler only fires when focus is inside it, which left
+    // it stuck open — and swallowing every other shortcut — if focus had moved.
+    if (event.key === 'Escape') {
+      if (this.ui.paletteOpen()) {
+        this.ui.closePalette();
+      } else if (this.float.active()) {
+        this.float.toggle();
+        this.ui.showToast('Everything back \u{1F9F9}', 2000);
+      }
+      // The game and synth pad bind their own Escape listeners.
+      return;
+    }
+
     if (this.ui.gameOpen() || this.ui.paletteOpen() || this.ui.synthOpen()) return;
+    // Float mode locks the page; only F gets you out from here.
+    if (this.float.active() && event.key.toLowerCase() !== 'f') return;
 
     const el = event.target as HTMLElement | null;
     if (el && (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))) return;
@@ -120,8 +149,12 @@ export class App implements OnInit {
       case 's':
         this.ui.openSynth();
         break;
-      case 'p':
-        this.ui.portalHop();
+      case 'f':
+        this.ui.showToast(
+          this.float.toggle() ? 'Gravity off \u{1FA90} drag things around' : 'Everything back \u{1F9F9}',
+          2600,
+        );
+        this.audio.play(this.float.active() ? 'levelup' : 'click');
         break;
       case '/':
         event.preventDefault();

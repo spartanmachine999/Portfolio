@@ -17,12 +17,37 @@
       <p class="d">{{ day() }}</p>
     </div>
 
-    @if (weather.data(); as w) {
-      <p class="wx">
-        <span class="emoji" aria-hidden="true">{{ w.icon }}</span>
-        <b>{{ w.temp }}&deg;C</b>
-        <span class="wx-label">{{ w.label }} in Delhi</span>
-      </p>
+    @switch (weather.state()) {
+      @case ('ready') {
+        @if (weather.data(); as w) {
+          <p class="wx">
+            <span class="emoji" aria-hidden="true">{{ w.icon }}</span>
+            <b>{{ w.temp }}&deg;C</b>
+            <span class="wx-label">{{ w.label }} in {{ w.place }}</span>
+          </p>
+        }
+      }
+      @case ('locating') {
+        <p class="wx wx-wait">
+          <span class="emoji" aria-hidden="true">🛰️</span>
+          <span class="wx-label">Finding you...</span>
+        </p>
+      }
+      @case ('loading') {
+        <p class="wx wx-wait">
+          <span class="emoji" aria-hidden="true">🌡️</span>
+          <span class="wx-label">Checking the sky...</span>
+        </p>
+      }
+      @case ('denied') {
+        <p class="wx wx-denied">{{ weather.deniedLine() }}</p>
+      }
+      @case ('failed') {
+        <p class="wx wx-denied">
+          Weather's gone walkabout. Assuming it's nice out
+          <span class="emoji" aria-hidden="true">🌤️</span>
+        </p>
+      }
     }
 
     <hr class="rule" />
@@ -84,16 +109,29 @@
       <span class="state" [class.on]="soundOn()">{{ soundOn() ? 'On' : 'Off' }}</span>
     </button>
 
+    @if (doodle()) {
+      <button
+        type="button"
+        class="row"
+        (click)="clearDoodles()"
+        [disabled]="doodleStore.strokeCount() === 0"
+      >
+        <span class="ico emoji" aria-hidden="true">🧽</span>
+        <span class="txt">Wipe the board</span>
+        <span class="state">{{ doodleStore.strokeCount() }}</span>
+      </button>
+    }
+
     <button type="button" class="row" (click)="ui.openSynth()">
       <span class="ico emoji" aria-hidden="true">🎹</span>
       <span class="txt">Synth pad</span>
       <span class="state key">S</span>
     </button>
 
-    <button type="button" class="row" (click)="ui.portalHop()">
-      <span class="ico emoji" aria-hidden="true">🌀</span>
-      <span class="txt">Portal hop</span>
-      <span class="state key">P</span>
+    <button type="button" class="row float-row" (click)="toggleFloat()">
+      <span class="ico emoji" aria-hidden="true">🪐</span>
+      <span class="txt">{{ float.active() ? 'Restore gravity' : 'Kill gravity' }}</span>
+      <span class="state key">F</span>
     </button>
 
     <!-- Unlabelled, same as the floating launcher. Let people poke it. -->

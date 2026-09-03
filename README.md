@@ -119,14 +119,18 @@ src/
   own accent, surfaces and ambient wash, not just a different highlight colour.
   Choice is remembered.
 - **ASCII mode** — the background canvas re-renders itself as live character art.
-- **Doodle mode** — a chalkboard skin with handwriting, hand-drawn wobbly
-  borders and stick-figure doodles. All artwork original.
+- **Doodle mode** — a chalkboard skin you can actually draw on. Drag across empty
+  board to leave chalk; buttons and cards still work normally. Drawings persist
+  between visits and recolour with the theme. All artwork original.
+- **Zero gravity** (`F`) — everything on screen detaches and drifts. Grab and
+  throw pieces, then hit "put it back" to reassemble.
 - **CRT power-off transition** between themes: the picture collapses to a bright
   line and powers back on in the new colour.
-- **Portal hop** — warps you to a random section through a green swirl.
 - **Synth pad** — nine pentatonic pads playable by click or `A`–`L`, three
   voices, each note fed through a feedback delay.
-- **World clocks and live Delhi weather** in the dock, via Open-Meteo.
+- **World clocks, plus weather for wherever the visitor actually is**, via
+  geolocation and Open-Meteo. Only asks when the dock is opened, never on load,
+  and falls back to a cheerful shrug if permission is refused.
 - **Custom 404** with a small pop-the-debris game.
 - **Command palette** on `Ctrl+K`, covering navigation, themes, skins, toys and
   contact. Substring and subsequence matching.
@@ -148,7 +152,7 @@ src/
 | `A` | ASCII mode |
 | `D` | Doodle mode |
 | `S` | Synth pad |
-| `P` | Portal hop |
+| `F` | Zero gravity |
 | `M` | UI sound on/off |
 | `G` | The hidden thing |
 | `Esc` | Close any overlay |
@@ -201,6 +205,17 @@ made it choppy the first time round:
   templates — `&#128640;` produced `U+F680` (tofu) instead of the rocket. Use
   the literal character.
 - Poppins has no emoji glyphs. Emoji need the `.emoji` class for its font stack.
+- **Keyboard hints must be hidden on touch.** A phone has no `Ctrl` or `F` key,
+  so anything keyboard-only sits behind
+  `@media (hover: none) and (pointer: coarse)`. Note that emulating a small
+  screen is *not* enough to test this — `pointer` and `hover` have to be
+  emulated explicitly, or the query silently never matches.
+- **Float mode clones rather than moves.** Repositioning the real elements would
+  collapse the layout behind them. Originals stay as invisible spacers.
+- **Doodle drawing never takes pointer events.** The canvas is permanently
+  `pointer-events: none`; drawing is driven from window listeners that bail out
+  if the gesture began on anything interactive. Don't "fix" this by giving the
+  canvas pointer events, it will eat every click on the page.
 
 ---
 

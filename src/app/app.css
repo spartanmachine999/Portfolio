@@ -135,3 +135,49 @@
     display: none;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Restore-gravity button
+   Sits above the float layer so it's always clickable, and centred at the top
+   where it can't be mistaken for one of the drifting pieces.
+   -------------------------------------------------------------------------- */
+.float-toggle {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--bg-deep) 92%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 14px 40px -12px var(--glow);
+  animation: drop-in 0.4s var(--ease-out-back) both;
+}
+
+.float-toggle:hover,
+.float-toggle:focus-visible {
+  background: var(--accent-soft);
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-22px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-toggle {
+    animation: none;
+  }
+}
