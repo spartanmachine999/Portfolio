@@ -1,34 +1,214 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 50;
-  backdrop-filter: saturate(180%) blur(8px);
-  background-color: var(--bg-color);
-  border-bottom: 1px solid var(--border-color);
+  z-index: 70;
+  border-bottom: 1px solid transparent;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    backdrop-filter var(--dur) var(--ease);
 }
+
+/* Only fog the backdrop once the page has actually scrolled — over the hero
+   the header should feel like part of the sky. */
+.site-header.is-scrolled {
+  background: rgba(6, 3, 4, 0.72);
+  backdrop-filter: saturate(150%) blur(14px);
+  border-bottom-color: var(--border);
+}
+
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 25px;
+  gap: 16px;
+  height: var(--header-h);
 }
-.brand { font-weight: 700; }
-.links { display: flex; gap: 16px; }
+
+/* ---- Brand ---- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  border: 1px solid var(--accent-line);
+  background: linear-gradient(145deg, var(--surface-2), var(--surface));
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 16px -4px var(--glow);
+  transition: all var(--dur) var(--ease);
+}
+
+.brand:hover .mark {
+  border-color: var(--accent);
+  box-shadow: 0 0 22px -2px var(--glow);
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.who {
+  font-size: 0.92rem;
+}
+
+/* ---- Desktop links ---- */
+.links {
+  display: flex;
+  gap: 4px;
+}
+
 .links a {
-  padding: 8px 10px;
-  border-radius: 8px;
-  color: var(--accent-color);
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-.links a:hover, .links a:focus-visible {
-  background: rgba(34, 211, 238, 0.08);
-  color: var(--text-primary);
-  box-shadow: 0 0 0 1px var(--accent-color) inset;
-}
-
-@media (max-width: 640px) {
-  .links { gap: 8px; }
-  .links a { padding: 6px 8px; }
+  position: relative;
+  padding: 8px 13px;
+  border-radius: 9px;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition:
+    color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
 }
 
+/* Underline that grows from the centre */
+.links a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateX(-50%);
+  transition: width var(--dur) var(--ease);
+}
 
+.links a:hover,
+.links a:focus-visible {
+  color: var(--text);
+  background: var(--accent-soft);
+}
+
+.links a:hover::after,
+.links a:focus-visible::after {
+  width: 52%;
+}
+
+.links a.active {
+  color: var(--accent);
+}
+
+.links a.active::after {
+  width: 62%;
+  box-shadow: 0 0 10px var(--glow);
+}
+
+/* ---- Burger ---- */
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0 9px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.burger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: transform var(--dur) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+
+.burger.x span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burger.x span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger.x span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ---- Mobile drawer ---- */
+.drawer {
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 0;
+  background: rgba(6, 3, 4, 0.96);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
+  transition:
+    max-height 0.36s var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.drawer.open {
+  max-height: 260px;
+  border-bottom-color: var(--border);
+}
+
+.drawer a {
+  padding: 15px clamp(18px, 5vw, 32px);
+  color: var(--text-dim);
+  font-size: 0.98rem;
+  font-weight: 500;
+  border-top: 1px solid var(--border);
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.drawer a:first-child {
+  border-top: 0;
+}
+
+.drawer a:hover,
+.drawer a.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding-left: calc(clamp(18px, 5vw, 32px) + 6px);
+}
+
+/* ---- Breakpoint ---- */
+@media (max-width: 720px) {
+  .links {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .drawer {
+    display: flex;
+  }
+
+  .who {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .who {
+    display: none;
+  }
+}

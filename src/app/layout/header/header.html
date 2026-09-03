@@ -1,14 +1,53 @@
-<header class="site-header">
+<header class="site-header" [class.is-scrolled]="scrolled()">
   <div class="container nav">
-    <div class="brand">🍕</div>
+    <a href="#hero" class="brand" (click)="onNavClick()">
+      <span class="mark" aria-hidden="true">MS</span>
+      <span class="who">Mohak Saxena</span>
+    </a>
+
     <nav class="links" aria-label="Primary">
-      <a href="#about">About</a>
-      <a href="#experience">Experience</a>
-      <a href="#projects">Projects</a>
-      <a href="#skills">Skills</a>
+      @for (link of links; track link.id) {
+        <a
+          [href]="'#' + link.id"
+          [class.active]="activeId() === link.id"
+          [attr.aria-current]="activeId() === link.id ? 'true' : null"
+          (click)="onNavClick()"
+        >
+          {{ link.label }}
+        </a>
+      }
     </nav>
+
+    <button
+      type="button"
+      class="burger"
+      [class.x]="menuOpen()"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="mobile-nav"
+      [attr.aria-label]="menuLabel()"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
   </div>
-  <div class="spacer" aria-hidden="true"></div>
+
+  <nav
+    class="drawer"
+    id="mobile-nav"
+    [class.open]="menuOpen()"
+    [attr.inert]="menuOpen() ? null : ''"
+    aria-label="Mobile"
+  >
+    @for (link of links; track link.id) {
+      <a
+        [href]="'#' + link.id"
+        [class.active]="activeId() === link.id"
+        (click)="onNavClick()"
+      >
+        {{ link.label }}
+      </a>
+    }
+  </nav>
 </header>
-
-

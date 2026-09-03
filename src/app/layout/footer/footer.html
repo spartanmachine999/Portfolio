@@ -1,7 +1,42 @@
 <footer class="site-footer">
   <div class="container">
-    <p>© {{ year }} Mohak Saxena.</p>
+    <div class="top">
+      <div class="cta">
+        <h2>Let's build something.</h2>
+        <p>Open to interesting product problems and good conversation.</p>
+        <a class="btn btn-primary" [href]="'mailto:' + data.contact.email">Get in touch</a>
+      </div>
+
+      <ul class="contact">
+        <li>
+          <span class="k">Email</span>
+          <a [href]="'mailto:' + data.contact.email">{{ data.contact.email }}</a>
+        </li>
+        <li>
+          <span class="k">Phone</span>
+          <a [href]="'tel:+91' + data.contact.phone">{{ data.contact.phone }}</a>
+        </li>
+        <li>
+          <span class="k">LinkedIn</span>
+          <a [href]="data.contact.linkedin" target="_blank" rel="noopener noreferrer">
+            /mohaksaxena16
+          </a>
+        </li>
+        <li>
+          <span class="k">Location</span>
+          <span>{{ data.contact.location }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <hr class="rule" />
+
+    <div class="bottom">
+      <p class="copy">&copy; {{ year }} {{ data.name }}</p>
+      <button type="button" class="top-btn" (click)="toTop()">
+        <span class="arrow" aria-hidden="true"></span>
+        Back to top
+      </button>
+    </div>
   </div>
 </footer>
-
-

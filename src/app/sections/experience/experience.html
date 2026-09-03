@@ -1,16 +1,36 @@
 <section id="experience" class="experience">
   <div class="container">
-    <h2>Experience</h2>
-    <div class="list" *ngIf="data.experience$ | async as items">
-      <article class="card" *ngFor="let item of items">
-        <h3>{{ item.role }} <span class="at">@ {{ item.company }}</span></h3>
-        <p class="duration">{{ item.duration }}</p>
-        <ul>
-          <li *ngFor="let line of item.description">{{ line }}</li>
-        </ul>
-      </article>
+    <div appReveal>
+      <h2 class="section-title"><span class="idx">02</span> Experience</h2>
     </div>
+
+    <ol class="timeline">
+      @for (item of data.experience(); track item.company + item.duration) {
+        <li class="entry" appReveal="left" [revealDelay]="$index * 70">
+          <span class="node" [class.live]="item.current" aria-hidden="true"></span>
+
+          <article class="card" appTilt [tiltMax]="3">
+            <header class="head">
+              <h3>
+                {{ item.role }}
+                <span class="at">@ {{ item.company }}</span>
+              </h3>
+              <p class="duration mono">
+                {{ item.duration }}
+                @if (item.current) {
+                  <span class="now">Now</span>
+                }
+              </p>
+            </header>
+
+            <ul class="points">
+              @for (line of item.description; track line) {
+                <li>{{ line }}</li>
+              }
+            </ul>
+          </article>
+        </li>
+      }
+    </ol>
   </div>
 </section>
-
-

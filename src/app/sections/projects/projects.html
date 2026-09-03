@@ -1,16 +1,42 @@
 <section id="projects" class="projects">
   <div class="container">
-    <h2>Projects</h2>
-    <div class="grid" *ngIf="data.projects$ | async as items">
-      <article class="card" *ngFor="let p of items">
-        <h3>{{ p.title }}</h3>
-        <p>{{ p.description }}</p>
-        <div class="tags">
-          <span class="badge" *ngFor="let t of p.techStack">{{ t }}</span>
-        </div>
-      </article>
+    <div appReveal>
+      <h2 class="section-title"><span class="idx">03</span> Projects</h2>
+    </div>
+
+    <div class="grid" appReveal stagger>
+      @for (p of data.projects(); track p.title) {
+        <article class="card project" appTilt [tiltMax]="4">
+          <span class="corner" aria-hidden="true"></span>
+
+          <h3>{{ p.title }}</h3>
+
+          @if (p.blurb) {
+            <p class="blurb">{{ p.blurb }}</p>
+          }
+
+          <p class="body" [class.clamped]="!isOpen(p.title)" [id]="'proj-' + $index">
+            {{ p.description }}
+          </p>
+
+          <button
+            type="button"
+            class="more"
+            (click)="toggle(p.title)"
+            [attr.aria-expanded]="isOpen(p.title)"
+            [attr.aria-controls]="'proj-' + $index"
+          >
+            {{ isOpen(p.title) ? 'Show less' : 'Read more' }}
+            <span class="arrow" [class.up]="isOpen(p.title)" aria-hidden="true"></span>
+          </button>
+
+          <div class="tags">
+            @for (t of p.techStack; track t) {
+              <span class="badge">{{ t }}</span>
+            }
+          </div>
+        </article>
+      }
     </div>
   </div>
 </section>
-
-

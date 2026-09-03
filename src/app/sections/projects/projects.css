@@ -1,22 +1,105 @@
-.projects .grid {
+.grid {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: clamp(16px, 2vw, 24px);
 }
-@media (min-width: 768px) {
-  .projects .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.projects .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
-.projects .card {
-  background-color: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-.projects .card:hover {
-  box-shadow: 0 0 12px -2px var(--accent-color);
-  border-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-.projects .tags .badge { background: color-mix(in srgb, var(--accent-color) 12%, transparent); }
 
+.project {
+  display: flex;
+  flex-direction: column;
+}
 
+.project h3 {
+  margin: 0 0 6px;
+  color: var(--text);
+  padding-right: 26px;
+}
+
+/* Decorative corner tick that lights up on hover */
+.corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 42px;
+  pointer-events: none;
+  border-top: 2px solid var(--border-strong);
+  border-right: 2px solid var(--border-strong);
+  border-top-right-radius: var(--radius-lg);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.project:hover .corner {
+  border-color: var(--accent);
+}
+
+.blurb {
+  margin: 0 0 12px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+
+.body {
+  font-size: 0.92rem;
+  margin-bottom: 10px;
+  transition: max-height var(--dur) var(--ease);
+}
+
+/* Collapsed state: clamp to a readable teaser instead of a wall of text. */
+.body.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.more {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: gap var(--dur-fast) var(--ease);
+}
+
+.more:hover {
+  gap: 11px;
+}
+
+.arrow {
+  width: 6px;
+  height: 6px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--dur) var(--ease);
+}
+
+.arrow.up {
+  transform: rotate(-135deg);
+}
+
+.tags {
+  margin-top: auto;
+  padding-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (min-width: 840px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

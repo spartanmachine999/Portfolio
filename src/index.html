@@ -1,47 +1,67 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>MohakSaxenaPortfolio</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <canvas id="asteroidCanvas"></canvas>
-  <div class="asteroid-container"></div>
+<html lang="en" data-theme="inferno">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mohak Saxena — Associate Product Manager</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<script>
-  function createAsteroid() {
-    const asteroid = document.createElement('div');
-    asteroid.classList.add('asteroid');
+    <meta
+      name="description"
+      content="Mohak Saxena — Associate Product Manager at Biz2X with a Computer Science (AI/ML) background. Product execution, research, and data-driven decision-making."
+    />
+    <meta name="author" content="Mohak Saxena" />
+    <meta name="theme-color" content="#050304" />
+    <meta name="color-scheme" content="dark" />
 
-    const size = Math.random() * 3 + 2; // 2px to 5px width
-    const length = Math.random() * 80 + 60; // 60px to 140px height
-    const duration = Math.random() * 1 + 0.8; // 0.8s to 1.8s
+    <!-- Link previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mohak Saxena — Associate Product Manager" />
+    <meta
+      property="og:description"
+      content="Product execution, research, and data-driven decision-making. Currently building at Biz2X."
+    />
+    <meta property="og:image" content="/profile.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mohak Saxena — Associate Product Manager" />
+    <meta
+      name="twitter:description"
+      content="Product execution, research, and data-driven decision-making. Currently building at Biz2X."
+    />
+    <meta name="twitter:image" content="/profile.jpg" />
 
-    asteroid.style.width = `${size}px`;
-    asteroid.style.height = `${length}px`;
-    asteroid.style.left = `${Math.random() * window.innerWidth}px`;
-    asteroid.style.animationDuration = `${duration}s`;
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
-    document.querySelector('.asteroid-container').appendChild(asteroid);
+    <!-- The stylesheet has always asked for Poppins and JetBrains Mono, but
+         neither was ever loaded, so everything silently fell back to system
+         sans. Loading them here with display=swap so text paints immediately. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-    setTimeout(() => {
-      asteroid.remove();
-    }, duration * 1000);
-  }
+  <body>
+    <app-root></app-root>
 
-  setInterval(createAsteroid, 300); // More frequent: every 300ms
-</script>
-
-  <app-root></app-root>
-  <script>
-  window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    document.body.style.backgroundPosition = `center ${scrollY * 0.2}px`;
-  });
-</script>
-
-</body>
+    <noscript>
+      <div style="padding: 40px; font-family: sans-serif; color: #f5f5f5; background: #050304">
+        <h1>Mohak Saxena</h1>
+        <p>
+          This portfolio needs JavaScript to run. You can still reach me at
+          <a href="mailto:mohaksaxena16@gmail.com" style="color: #ff3c3c"
+            >mohaksaxena16@gmail.com</a
+          >
+          or on
+          <a
+            href="https://www.linkedin.com/in/mohaksaxena16"
+            style="color: #ff3c3c"
+            >LinkedIn</a
+          >.
+        </p>
+      </div>
+    </noscript>
+  </body>
 </html>

@@ -1,28 +1,58 @@
 <section id="hero" class="hero">
   <div class="container hero-inner">
-    <div class="hero-image-upload">
-      <img class="avatar" [src]="avatarSrc" alt="Profile Image" />
+    <div class="hero-text" appReveal>
+      <p class="status">
+        <span class="beacon" aria-hidden="true"></span>
+        Product @ Biz2X &middot; {{ data.contact.location }}
+      </p>
+
+      <h1>
+        <span class="hi">Hi, I'm</span>
+        <span class="name">{{ data.name }}</span>
+      </h1>
+
+      <p class="typeline" aria-live="polite">
+        <span class="typed">{{ typed() }}</span><span
+          class="caret"
+          [class.blink]="caretOn()"
+          aria-hidden="true"
+        ></span>
+      </p>
+
+      <p class="lede">{{ data.intro }}</p>
+
+      <div class="hero-links">
+        <a class="btn btn-primary" [href]="data.contact.resume" download>
+          <span>Résumé</span>
+        </a>
+        <a class="btn" [href]="data.contact.linkedin" target="_blank" rel="noopener noreferrer">
+          <span>LinkedIn</span>
+        </a>
+        <a class="btn btn-ghost" [href]="'mailto:' + data.contact.email">
+          <span>Email</span>
+        </a>
+      </div>
     </div>
 
-    <div class="hero-text">
-      <h1>Mohak Saxena 🤓</h1>
-      <h3 class="subtitle">Product @Biz2X | Former Research Intern @IIM Ahmedabad</h3>
-      <p>
-        Associate Product Manager at Biz2X with a Computer Science (AI/ML) background,
-        blending product execution with data-driven decision-making to build scalable,
-        user-centric solutions.
-      </p>
-      <div class="hero-links">
-        <a href="/Mohak_Saxena_Resume.pdf" download><img src="/reshot-icon-resume-92U4B7WG8Y.svg"></a>
-        <a href="https://www.linkedin.com/in/mohaksaxena16" target="_blank"><img src="/linkedin-svgrepo-com.svg"></a>
-        <a href="mailto:mohaksaxena16@gmail.com" target="_blank"><img src="/email-svgrepo-com.svg"></a>
+    <div class="hero-media" appReveal="scale">
+      <div class="orb">
+        <span class="ring r1" aria-hidden="true"></span>
+        <span class="ring r2" aria-hidden="true"></span>
+        <span class="halo" aria-hidden="true"></span>
+        <img
+          class="avatar"
+          [src]="avatarSrc"
+          alt="Portrait of {{ data.name }}"
+          width="240"
+          height="240"
+          fetchpriority="high"
+        />
       </div>
     </div>
   </div>
-  <div class="spacer" aria-hidden="true"></div>
+
+  <a href="#about" class="scroll-cue" aria-label="Scroll to About">
+    <span class="mouse" aria-hidden="true"><span class="wheel"></span></span>
+    <span class="cue-text">Scroll</span>
+  </a>
 </section>
-
-
-
-
-

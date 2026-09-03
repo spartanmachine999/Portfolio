@@ -1,0 +1,57 @@
+<div class="dock" [class.open]="open()">
+  <button
+    type="button"
+    class="handle"
+    (click)="toggleOpen()"
+    [attr.aria-expanded]="open()"
+    aria-controls="dock-panel"
+  >
+    <span class="clock mono" aria-hidden="true">{{ time() }}</span>
+    <span class="chev" aria-hidden="true"></span>
+    <span class="sr-only">{{ open() ? 'Hide controls' : 'Show controls' }}</span>
+  </button>
+
+  <div class="panel" id="dock-panel" [attr.inert]="open() ? null : ''">
+    <div class="stamp">
+      <p class="t mono">{{ time() }}</p>
+      <p class="d">{{ day() }}</p>
+    </div>
+
+    <hr class="rule" />
+
+    <fieldset class="group">
+      <legend>Mode</legend>
+      <div class="swatches" role="radiogroup" aria-label="Colour mode">
+        @for (opt of themeOptions; track opt.id) {
+          <button
+            type="button"
+            class="swatch"
+            role="radio"
+            [class.on]="mode() === opt.id"
+            [attr.aria-checked]="mode() === opt.id"
+            [style.--sw]="opt.swatch"
+            [title]="opt.label + ' — ' + opt.hint"
+            (click)="pickTheme(opt.id)"
+          >
+            <span class="chip" aria-hidden="true"></span>
+            <span class="label">{{ opt.label }}</span>
+          </button>
+        }
+      </div>
+    </fieldset>
+
+    <hr class="rule" />
+
+    <button type="button" class="row" (click)="toggleSound()" [attr.aria-pressed]="soundOn()">
+      <span class="ico" aria-hidden="true">{{ soundOn() ? '♪' : '×' }}</span>
+      <span class="txt">Sound</span>
+      <span class="state" [class.on]="soundOn()">{{ soundOn() ? 'On' : 'Off' }}</span>
+    </button>
+
+    <button type="button" class="row play" (click)="onLaunch()">
+      <span class="ico" aria-hidden="true">▶</span>
+      <span class="txt">Meteor Defense</span>
+      <span class="state key">G</span>
+    </button>
+  </div>
+</div>

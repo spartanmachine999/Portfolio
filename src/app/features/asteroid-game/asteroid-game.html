@@ -1,0 +1,94 @@
+<div
+  class="backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Meteor Defense mini game"
+  (click)="close()"
+>
+  <div class="shell" (click)="$event.stopPropagation()">
+    <header class="bar">
+      <div class="title">
+        <span class="dot" aria-hidden="true"></span>
+        <h2>Meteor Defense</h2>
+      </div>
+
+      <dl class="hud">
+        <div>
+          <dt>Score</dt>
+          <dd class="mono">{{ score() }}</dd>
+        </div>
+        <div>
+          <dt>Best</dt>
+          <dd class="mono">{{ hiScore() }}</dd>
+        </div>
+        <div>
+          <dt>Lvl</dt>
+          <dd class="mono">{{ level() }}</dd>
+        </div>
+        <div>
+          <dt>Lives</dt>
+          <dd class="lives" aria-label="{{ lives() }} lives remaining">
+            @for (l of [1, 2, 3]; track l) {
+              <span class="heart" [class.spent]="l > lives()" aria-hidden="true"></span>
+            }
+          </dd>
+        </div>
+      </dl>
+
+      <div class="actions">
+        @if (status() === 'playing' || status() === 'paused') {
+          <button type="button" class="icon-btn" (click)="togglePause()">
+            {{ status() === 'paused' ? 'Resume' : 'Pause' }}
+          </button>
+        }
+        <button type="button" class="icon-btn close" (click)="close()" aria-label="Close game">
+          &#10005;
+        </button>
+      </div>
+    </header>
+
+    <div class="stage">
+      <canvas
+        #canvas
+        class="board"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp()"
+        (pointercancel)="onPointerUp()"
+        (pointerleave)="onPointerUp()"
+      ></canvas>
+
+      @if (status() !== 'playing') {
+        <div class="overlay">
+          @switch (status()) {
+            @case ('ready') {
+              <h3>Incoming.</h3>
+              <p>Shoot the debris before it reaches you.</p>
+              <button type="button" class="btn btn-primary" (click)="start()">Launch</button>
+            }
+            @case ('paused') {
+              <h3>Paused</h3>
+              <button type="button" class="btn btn-primary" (click)="togglePause()">Resume</button>
+            }
+            @case ('over') {
+              <h3>{{ isNewRecord() ? 'New record' : 'Destroyed' }}</h3>
+              <p class="final mono">{{ score() }}</p>
+              @if (isNewRecord()) {
+                <p class="record">Personal best.</p>
+              }
+              <button type="button" class="btn btn-primary" (click)="start()">Again</button>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <footer class="hints">
+      <span><kbd>&larr;</kbd><kbd>&rarr;</kbd> move</span>
+      <span><kbd>Space</kbd> fire</span>
+      <span><kbd>P</kbd> pause</span>
+      <span><kbd>Esc</kbd> close</span>
+      <span class="touch-hint">Drag to move, hold to fire</span>
+    </footer>
+  </div>
+</div>

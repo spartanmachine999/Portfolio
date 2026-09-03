@@ -1,9 +1,26 @@
-<app-header></app-header>
-<main>
-  <app-hero></app-hero>
-  <app-about></app-about>
-  <app-experience></app-experience>
-  <app-projects></app-projects>
-  <app-skills></app-skills>
+<a class="skip-link" href="#about">Skip to content</a>
+
+<app-starfield />
+<app-scroll-progress />
+
+<app-header />
+
+<main id="main">
+  <app-hero />
+  <app-about />
+  <app-experience />
+  <app-projects />
+  <app-skills />
 </main>
-<app-footer></app-footer>
+
+<app-footer />
+
+<app-control-dock (launchGame)="openGame()" />
+
+<!-- Deferred so the game's code is a separate chunk and never weighs down
+     the first paint. It only downloads once someone actually asks for it. -->
+@defer (when gameOpen()) {
+  @if (gameOpen()) {
+    <app-asteroid-game (closed)="closeGame()" />
+  }
+}

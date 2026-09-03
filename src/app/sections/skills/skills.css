@@ -1,14 +1,38 @@
-.skills .group { margin-top: 20px; }
-.skills .badges { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
-.skills .badges .badge {
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-.skills .badges .badge:hover {
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+.groups {
+  display: grid;
+  gap: clamp(24px, 3vw, 38px);
 }
 
+.group h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text);
+}
 
+/* Rule that fills the space left of the count */
+.group h3::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}
+
+.count {
+  order: 3;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-mute);
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+}
+
+.badges .badge {
+  cursor: default;
+}
