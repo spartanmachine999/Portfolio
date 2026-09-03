@@ -129,6 +129,25 @@ h1 {
   gap: 12px;
 }
 
+/* Little play triangle on the game button */
+.pico {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid currentColor;
+}
+
+.play-btn {
+  animation: glow-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  50% {
+    box-shadow: 0 10px 34px -6px var(--glow-hard);
+  }
+}
+
 /* ---- Avatar ---- */
 .hero-media {
   display: flex;
@@ -284,6 +303,7 @@ h1 {
   .r2,
   .halo,
   .name,
+  .play-btn,
   .beacon::after {
     animation: none;
   }

@@ -1,4 +1,6 @@
 <section id="hero" class="hero">
+  <span class="grid-floor" aria-hidden="true"></span>
+
   <div class="container hero-inner">
     <div class="hero-text" appReveal>
       <p class="status">
@@ -7,8 +9,8 @@
       </p>
 
       <h1>
-        <span class="hi">Hi, I'm</span>
-        <span class="name">{{ data.name }}</span>
+        <span class="hi mono">&gt; HI, I'M</span>
+        <span class="name chroma">{{ data.name }}</span>
       </h1>
 
       <p class="typeline" aria-live="polite">
@@ -22,16 +24,25 @@
       <p class="lede">{{ data.intro }}</p>
 
       <div class="hero-links">
-        <a class="btn btn-primary" [href]="data.contact.resume" download>
-          <span>Résumé</span>
-        </a>
+        <button type="button" class="btn btn-primary play-btn" (click)="playGame.emit()">
+          <span class="pico" aria-hidden="true"></span>
+          <span>Play the game</span>
+        </button>
+        <a class="btn" [href]="data.contact.resume" download>Résumé</a>
         <a class="btn" [href]="data.contact.linkedin" target="_blank" rel="noopener noreferrer">
-          <span>LinkedIn</span>
+          LinkedIn
         </a>
-        <a class="btn btn-ghost" [href]="'mailto:' + data.contact.email">
-          <span>Email</span>
-        </a>
+        <a class="btn btn-ghost" [href]="'mailto:' + data.contact.email">Email</a>
       </div>
+
+      <p class="keys mono">
+        <button type="button" class="kbtn" (click)="openPalette.emit()">
+          <kbd>Ctrl</kbd><kbd>K</kbd> commands
+        </button>
+        <span><kbd>G</kbd> game</span>
+        <span><kbd>T</kbd> theme</span>
+        <span><kbd>M</kbd> sound</span>
+      </p>
     </div>
 
     <div class="hero-media" appReveal="scale">

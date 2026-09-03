@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -66,7 +67,7 @@ const HISCORE_KEY = 'ms-portfolio-hiscore';
   templateUrl: './asteroid-game.html',
   styleUrl: './asteroid-game.css',
 })
-export class AsteroidGameComponent implements OnDestroy {
+export class AsteroidGameComponent implements AfterViewInit, OnDestroy {
   readonly closed = output<void>();
 
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
@@ -213,13 +214,28 @@ export class AsteroidGameComponent implements OnDestroy {
   // Loop
   // ---------------------------------------------------------------------------
 
-  private startLoop(): void {
+  /**
+   * Size the backing store and paint one frame straight away.
+   *
+   * Without this the canvas sat at the browser default 300x150 until the player
+   * pressed Launch, so the board behind the intro overlay was an unsized blank.
+   */
+  ngAfterViewInit(): void {
+    this.initCanvas();
+    this.render();
+  }
+
+  private initCanvas(): CanvasRenderingContext2D | null {
+    if (this.ctx) return this.ctx;
     const canvas = this.canvasRef().nativeElement;
-    if (!this.ctx) {
-      canvas.width = VW;
-      canvas.height = VH;
-      this.ctx = canvas.getContext('2d');
-    }
+    canvas.width = VW;
+    canvas.height = VH;
+    this.ctx = canvas.getContext('2d');
+    return this.ctx;
+  }
+
+  private startLoop(): void {
+    this.initCanvas();
     if (!this.ctx || this.raf) return;
 
     this.last = performance.now();

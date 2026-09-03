@@ -742,3 +742,518 @@ body.modal-open {
     color: #222;
   }
 }
+
+/* ==========================================================================
+   13. Cyberpunk layer
+   Base identity stays red-on-black. Cyan (#00eaff) and magenta (#ff0080)
+   appear ONLY as chromatic-aberration fringing on glitch effects, which is
+   what gives the neon read without abandoning the palette.
+   ========================================================================== */
+
+/* --- CRT scanlines --- */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* --- Vignette + a slow rolling refresh band --- */
+html::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 60, 60, 0.05), transparent 6%, transparent 94%, rgba(255, 60, 60, 0.05)),
+    radial-gradient(ellipse 90% 70% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55));
+}
+
+/* Void mode is the calm one — dial the CRT treatment right back there. */
+html[data-theme='void']::before {
+  opacity: 0.16;
+}
+
+html[data-theme='void'] .crt-band {
+  display: none;
+}
+
+/* --- Rolling scan band --- */
+.crt-band {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 140px;
+  z-index: 97;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 60, 60, 0.045) 45%,
+    rgba(0, 234, 255, 0.03) 55%,
+    transparent
+  );
+  animation: roll 7s linear infinite;
+}
+
+@keyframes roll {
+  0% {
+    transform: translateY(-160px);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Glitch text — needs data-text="<same text>" on the element
+   -------------------------------------------------------------------------- */
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.glitch::before {
+  color: #00eaff;
+  z-index: -1;
+  animation: glitch-x 3.4s infinite steps(1);
+}
+
+.glitch::after {
+  color: #ff0080;
+  z-index: -2;
+  animation: glitch-y 2.7s infinite steps(1);
+}
+
+@keyframes glitch-x {
+  0%,
+  92%,
+  100% {
+    transform: translate(0);
+    clip-path: none;
+  }
+  93% {
+    transform: translate(-2px, 1px);
+    clip-path: inset(20% 0 55% 0);
+  }
+  95% {
+    transform: translate(2px, -1px);
+    clip-path: inset(65% 0 12% 0);
+  }
+  97% {
+    transform: translate(-1px, 0);
+    clip-path: inset(38% 0 40% 0);
+  }
+}
+
+@keyframes glitch-y {
+  0%,
+  90%,
+  100% {
+    transform: translate(0);
+    clip-path: none;
+  }
+  91% {
+    transform: translate(2px, -1px);
+    clip-path: inset(48% 0 30% 0);
+  }
+  94% {
+    transform: translate(-2px, 1px);
+    clip-path: inset(10% 0 70% 0);
+  }
+  96% {
+    transform: translate(1px, 1px);
+    clip-path: inset(72% 0 8% 0);
+  }
+}
+
+/* Chromatic flicker for gradient-filled text, where pseudo-element glitch
+   would fight the background-clip. */
+.chroma {
+  transition: filter 0.2s var(--ease);
+}
+
+.chroma:hover {
+  animation: chroma-shake 0.42s steps(2) 1;
+  filter: drop-shadow(-3px 0 rgba(0, 234, 255, 0.75)) drop-shadow(3px 0 rgba(255, 0, 128, 0.75));
+}
+
+@keyframes chroma-shake {
+  25% {
+    transform: translate(-2px, 1px) skewX(-1.5deg);
+  }
+  50% {
+    transform: translate(2px, -1px) skewX(1.5deg);
+  }
+  75% {
+    transform: translate(-1px, 0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Neon frame — animated conic border for cards
+   -------------------------------------------------------------------------- */
+.neon {
+  position: relative;
+}
+
+.neon::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  opacity: 0;
+  background: conic-gradient(
+    from var(--ang, 0deg),
+    transparent 0deg,
+    var(--accent) 40deg,
+    #00eaff 70deg,
+    transparent 130deg,
+    transparent 360deg
+  );
+  /* Mask so only the 1px ring shows, not the whole box. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  transition: opacity 0.3s var(--ease);
+}
+
+.neon:hover::after {
+  opacity: 1;
+  animation: sweep 2.4s linear infinite;
+}
+
+@property --ang {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes sweep {
+  to {
+    --ang: 360deg;
+  }
+}
+
+/* Note: no generic `.hud` bracket helper here on purpose — `.card` already
+   uses ::before for the cursor spotlight and `.project` uses `.corner` for its
+   bracket, so a third pseudo-element helper would just collide. */
+
+/* --------------------------------------------------------------------------
+   Ticker strip
+   -------------------------------------------------------------------------- */
+.ticker {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  border-block: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(255, 60, 60, 0.06), rgba(0, 234, 255, 0.03));
+  padding-block: 9px;
+  /* Fade the ends so text doesn't hard-cut at the edges. */
+  -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ticker-track {
+  display: flex;
+  flex: none;
+  gap: 40px;
+  padding-right: 40px;
+  white-space: nowrap;
+  animation: marquee 26s linear infinite;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-track span {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.ticker-track span b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Overdrive — the Konami reward
+   -------------------------------------------------------------------------- */
+html.overdrive {
+  --glow-strength: 2.4;
+  --accent: #ff1f4b;
+  --glow: rgba(255, 31, 75, 0.75);
+  --glow-hard: rgba(255, 31, 75, 0.95);
+  animation: od-hue 5s linear infinite;
+}
+
+html.overdrive::before {
+  opacity: 1;
+}
+
+html.overdrive .card,
+html.overdrive .btn,
+html.overdrive .badge {
+  animation: od-jitter 0.34s steps(2) infinite;
+}
+
+html.overdrive h1,
+html.overdrive h2 {
+  text-shadow:
+    -3px 0 rgba(0, 234, 255, 0.85),
+    3px 0 rgba(255, 0, 128, 0.85);
+}
+
+@keyframes od-hue {
+  50% {
+    filter: hue-rotate(-18deg) saturate(1.5) contrast(1.12);
+  }
+}
+
+@keyframes od-jitter {
+  50% {
+    transform: translate(0.6px, -0.6px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Toast / hint
+   -------------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  z-index: 170;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 11px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent-line);
+  background: rgba(20, 6, 8, 0.94);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 44px -16px rgba(0, 0, 0, 0.9), 0 0 30px -12px var(--glow);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  animation: toast-in 0.4s var(--ease-out-back) both;
+}
+
+.toast kbd {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 0.66rem;
+  padding: 3px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.toast.out {
+  animation: toast-out 0.3s var(--ease) both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(18px);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(14px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Custom cursor: hide the native arrow only once the component is live
+   -------------------------------------------------------------------------- */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+
+/* Text fields keep a real caret — never take that away. */
+html.has-cursor input,
+html.has-cursor textarea {
+  cursor: text !important;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion: strip the whole cyberpunk motion layer
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html::before,
+  .crt-band {
+    display: none;
+  }
+
+  .glitch::before,
+  .glitch::after,
+  .ticker-track,
+  html.overdrive {
+    animation: none !important;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    display: none;
+  }
+
+  .chroma:hover {
+    animation: none;
+    filter: none;
+  }
+}
+
+@media print {
+  html::before,
+  html::after,
+  .crt-band,
+  .ticker,
+  .toast {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. Hero extras
+   These live globally rather than in hero.css purely to keep that component
+   under its 4kB stylesheet budget.
+   -------------------------------------------------------------------------- */
+
+/* Perspective grid floor behind the hero */
+.grid-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 220%;
+  height: 46%;
+  transform: translateX(-50%) perspective(340px) rotateX(72deg);
+  transform-origin: bottom center;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(to right, rgba(255, 60, 60, 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 60, 60, 0.2) 1px, transparent 1px);
+  background-size: 46px 46px;
+  /* Fade out toward the horizon so it doesn't look like a hard-edged plane. */
+  -webkit-mask: linear-gradient(to top, #000, transparent 78%);
+  mask: linear-gradient(to top, #000, transparent 78%);
+  animation: floor-run 3.2s linear infinite;
+}
+
+@keyframes floor-run {
+  to {
+    background-position:
+      0 46px,
+      0 46px;
+  }
+}
+
+html[data-theme='void'] .grid-floor {
+  opacity: 0.16;
+  animation: none;
+}
+
+/* Keyboard shortcut hint row */
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 24px 0 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.keys span,
+.keys .kbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.keys kbd {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 0.62rem;
+  padding: 3px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--accent);
+  letter-spacing: 0;
+}
+
+.keys .kbtn {
+  padding: 4px 9px 4px 5px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.keys .kbtn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (max-width: 879px) {
+  .keys {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-floor {
+    animation: none;
+  }
+}

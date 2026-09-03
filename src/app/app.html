@@ -2,11 +2,27 @@
 
 <app-starfield />
 <app-scroll-progress />
+<app-cursor />
+<app-click-fx />
+<span class="crt-band" aria-hidden="true"></span>
 
 <app-header />
 
 <main id="main">
-  <app-hero />
+  <app-hero (playGame)="openGame()" (openPalette)="openPalette()" />
+
+  <!-- Track is duplicated so the marquee can loop seamlessly at -50%. -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      @for (item of tickerItems; track $index) {
+        <span><b>//</b> {{ item }}</span>
+      }
+      @for (item of tickerItems; track $index) {
+        <span><b>//</b> {{ item }}</span>
+      }
+    </div>
+  </div>
+
   <app-about />
   <app-experience />
   <app-projects />
@@ -17,8 +33,33 @@
 
 <app-control-dock (launchGame)="openGame()" />
 
-<!-- Deferred so the game's code is a separate chunk and never weighs down
-     the first paint. It only downloads once someone actually asks for it. -->
+<!-- Floating always-visible launcher. The dock alone hid the game behind a
+     collapsed panel, which meant nobody found it. -->
+<button
+  type="button"
+  class="game-fab"
+  (click)="openGame()"
+  aria-label="Play Meteor Defense mini game"
+>
+  <span class="fab-ico" aria-hidden="true">
+    <span class="ship"></span>
+  </span>
+  <span class="fab-label">Play</span>
+  <span class="fab-pulse" aria-hidden="true"></span>
+</button>
+
+@if (toast()) {
+  <div class="toast" [class.out]="toastLeaving()" role="status" aria-live="polite">
+    <span>{{ toast() }}</span>
+  </div>
+}
+
+@defer (when paletteOpen()) {
+  @if (paletteOpen()) {
+    <app-command-palette (closed)="closePalette()" (playGame)="openGame()" />
+  }
+}
+
 @defer (when gameOpen()) {
   @if (gameOpen()) {
     <app-asteroid-game (closed)="closeGame()" />

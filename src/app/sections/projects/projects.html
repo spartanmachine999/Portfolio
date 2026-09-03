@@ -1,12 +1,15 @@
 <section id="projects" class="projects">
   <div class="container">
     <div appReveal>
-      <h2 class="section-title"><span class="idx">03</span> Projects</h2>
+      <h2 class="section-title">
+        <span class="idx">03</span>
+        <span class="glitch" data-text="Projects">Projects</span>
+      </h2>
     </div>
 
     <div class="grid" appReveal stagger>
       @for (p of data.projects(); track p.title) {
-        <article class="card project" appTilt [tiltMax]="4">
+        <article class="card project neon" appTilt [tiltMax]="4">
           <span class="corner" aria-hidden="true"></span>
 
           <h3>{{ p.title }}</h3>

@@ -1,0 +1,51 @@
+<div class="backdrop" (click)="close()">
+  <div
+    class="panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Command palette"
+    (click)="$event.stopPropagation()"
+    (keydown)="onKey($event)"
+  >
+    <div class="bar">
+      <span class="prompt mono" aria-hidden="true">&gt;</span>
+      <input
+        #input
+        type="text"
+        class="input"
+        placeholder="Type a command..."
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Search commands"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+      />
+      <kbd class="esc">Esc</kbd>
+    </div>
+
+    <ul class="list" role="listbox" aria-label="Commands">
+      @for (cmd of filtered(); track cmd.id) {
+        <li
+          role="option"
+          [attr.aria-selected]="cursor() === $index"
+          [class.on]="cursor() === $index"
+          (click)="exec(cmd)"
+          (mouseenter)="cursor.set($index)"
+        >
+          <span class="group mono">{{ cmd.group }}</span>
+          <span class="label">{{ cmd.label }}</span>
+          @if (cmd.hint) {
+            <span class="hint mono">{{ cmd.hint }}</span>
+          }
+        </li>
+      } @empty {
+        <li class="none">No matching command</li>
+      }
+    </ul>
+
+    <footer class="foot">
+      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+      <span><kbd>&crarr;</kbd> run</span>
+    </footer>
+  </div>
+</div>

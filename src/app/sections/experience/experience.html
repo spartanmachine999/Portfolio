@@ -1,7 +1,10 @@
 <section id="experience" class="experience">
   <div class="container">
     <div appReveal>
-      <h2 class="section-title"><span class="idx">02</span> Experience</h2>
+      <h2 class="section-title">
+        <span class="idx">02</span>
+        <span class="glitch" data-text="Experience">Experience</span>
+      </h2>
     </div>
 
     <ol class="timeline">
@@ -9,7 +12,7 @@
         <li class="entry" appReveal="left" [revealDelay]="$index * 70">
           <span class="node" [class.live]="item.current" aria-hidden="true"></span>
 
-          <article class="card" appTilt [tiltMax]="3">
+          <article class="card neon" appTilt [tiltMax]="3">
             <header class="head">
               <h3>
                 {{ item.role }}
