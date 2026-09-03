@@ -118,10 +118,18 @@ src/
 - **Six dark themes** — Inferno, Cyber, Synth, Acid, Solar, Void — each with its
   own accent, surfaces and ambient wash, not just a different highlight colour.
   Choice is remembered.
-- **Music player** with four original French-house loops synthesized live in the
-  browser, plus a spectrum visualiser. See the note below.
-- **Command palette** on `Ctrl+K`, covering navigation, themes, music, contact
-  and the game. Substring and subsequence matching.
+- **ASCII mode** — the background canvas re-renders itself as live character art.
+- **Doodle mode** — a chalkboard skin with handwriting, hand-drawn wobbly
+  borders and stick-figure doodles. All artwork original.
+- **CRT power-off transition** between themes: the picture collapses to a bright
+  line and powers back on in the new colour.
+- **Portal hop** — warps you to a random section through a green swirl.
+- **Synth pad** — nine pentatonic pads playable by click or `A`–`L`, three
+  voices, each note fed through a feedback delay.
+- **World clocks and live Delhi weather** in the dock, via Open-Meteo.
+- **Custom 404** with a small pop-the-debris game.
+- **Command palette** on `Ctrl+K`, covering navigation, themes, skins, toys and
+  contact. Substring and subsequence matching.
 - **Custom cursor**: a precise dot plus a targeting reticle that locks on over
   interactive elements. Mouse only; touch and reduced-motion keep the native one.
 - **A hidden mini-game.** Deliberately unlabelled.
@@ -137,20 +145,35 @@ src/
 | --- | --- |
 | `Ctrl+K` or `/` | Command palette |
 | `T` | Cycle theme |
+| `A` | ASCII mode |
+| `D` | Doodle mode |
+| `S` | Synth pad |
+| `P` | Portal hop |
 | `M` | UI sound on/off |
 | `G` | The hidden thing |
 | `Esc` | Close any overlay |
+| `↑↑↓↓←→←→BA` | Something louder |
 
-### About the music
+### On audio and licensing
 
-The four loops are **original compositions**, generated at runtime from
-oscillators and noise buffers. No audio files ship and no third-party licensing
-is involved. They're written in the spirit of French house — four-on-the-floor
-kick, sidechained filtered chord stabs, syncopated bass, filter sweeps — but
-they are not Daft Punk tracks and contain no samples.
+There is deliberately **no background music**. Two reasons worth remembering
+before adding any:
 
-If you want actual Daft Punk on the site, the legal route is an embed. Add a
-Spotify iframe (Spotify handles the licensing) rather than hosting audio files.
+1. Browsers block autoplaying audio without a user gesture, so "plays on load"
+   is impossible for any track, licensed or not.
+2. Commercial tracks cannot be self-hosted. If you want a specific song, embed
+   it (Spotify or YouTube carry the licence) or use a royalty-free track you
+   have rights to. Don't drop an MP3 of a commercial release into `public/`.
+
+The synth pad generates every sound from oscillators at runtime, so it ships no
+audio files and involves no licensing.
+
+### On the homage features
+
+Doodle mode and Portal hop are *stylistic* nods, built entirely from original
+SVG and CSS. No characters, logos, licensed fonts or artwork from any franchise
+are reproduced, and the modes are named neutrally rather than after the works
+they're inspired by. Keep it that way if you extend them.
 
 ## Performance notes
 

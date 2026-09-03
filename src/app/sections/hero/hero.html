@@ -34,7 +34,7 @@
         <button
           type="button"
           class="btn mystery"
-          (click)="playGame.emit()"
+          (click)="ui.openGame()"
           aria-label="Launch mini game"
         >
           <span class="emoji" aria-hidden="true">🚀</span>
@@ -43,11 +43,13 @@
       </div>
 
       <p class="keys mono">
-        <button type="button" class="kbtn" (click)="openPalette.emit()">
+        <button type="button" class="kbtn" (click)="ui.openPalette()">
           <kbd>Ctrl</kbd><kbd>K</kbd> commands
         </button>
         <span><kbd>T</kbd> theme</span>
-        <span><kbd>M</kbd> sound</span>
+        <span><kbd>A</kbd> ascii</span>
+        <span><kbd>D</kbd> doodle</span>
+        <span><kbd>P</kbd> portal</span>
       </p>
     </div>
 

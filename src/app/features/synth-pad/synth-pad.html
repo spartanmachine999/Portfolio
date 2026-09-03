@@ -1,0 +1,49 @@
+<div class="backdrop" (click)="close()">
+  <div
+    class="shell"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Synth pad"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="bar">
+      <h2><span class="emoji" aria-hidden="true">🎹</span> Synth Pad</h2>
+
+      <div class="voices" role="radiogroup" aria-label="Voice">
+        @for (v of voices; track v) {
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="voice() === v"
+            [class.on]="voice() === v"
+            (click)="setVoice(v)"
+          >
+            {{ v }}
+          </button>
+        }
+      </div>
+
+      <button type="button" class="x" (click)="close()" aria-label="Close synth pad">✕</button>
+    </header>
+
+    <div class="grid">
+      @for (pad of pads; track pad.key) {
+        <button
+          type="button"
+          class="pad"
+          [class.lit]="active().has(pad.key)"
+          (pointerdown)="hit(pad)"
+          [attr.aria-label]="'Play ' + pad.note"
+        >
+          <span class="note">{{ pad.note }}</span>
+          <span class="kb mono">{{ pad.key }}</span>
+        </button>
+      }
+    </div>
+
+    <footer class="hint">
+      Tap the pads or use <kbd>A</kbd>–<kbd>L</kbd>. It's a pentatonic scale, so
+      nothing you play can sound wrong.
+    </footer>
+  </div>
+</div>

@@ -263,3 +263,6 @@
     display: none;
   }
 }
+
+/* Weather and world-clock styling lives in styles.css, to keep this sheet
+   inside its 4kB budget. */

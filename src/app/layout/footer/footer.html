@@ -2,28 +2,31 @@
   <div class="container">
     <div class="top">
       <div class="cta">
-        <h2>Let's build something.</h2>
+        <h2>Let's build something. <span class="emoji" aria-hidden="true">🛠️</span></h2>
         <p>Open to interesting product problems and good conversation.</p>
-        <a class="btn btn-primary" [href]="'mailto:' + data.contact.email">Get in touch</a>
+        <a class="btn btn-primary" [href]="'mailto:' + data.contact.email">
+          <span class="emoji" aria-hidden="true">👋</span>
+          <span>Get in touch</span>
+        </a>
       </div>
 
       <ul class="contact">
         <li>
-          <span class="k">Email</span>
+          <span class="k"><span class="emoji" aria-hidden="true">✉️</span> Email</span>
           <a [href]="'mailto:' + data.contact.email">{{ data.contact.email }}</a>
         </li>
         <li>
-          <span class="k">Phone</span>
+          <span class="k"><span class="emoji" aria-hidden="true">📱</span> Phone</span>
           <a [href]="'tel:+91' + data.contact.phone">{{ data.contact.phone }}</a>
         </li>
         <li>
-          <span class="k">LinkedIn</span>
+          <span class="k"><span class="emoji" aria-hidden="true">🔗</span> LinkedIn</span>
           <a [href]="data.contact.linkedin" target="_blank" rel="noopener noreferrer">
             /mohaksaxena16
           </a>
         </li>
         <li>
-          <span class="k">Location</span>
+          <span class="k"><span class="emoji" aria-hidden="true">📍</span> Location</span>
           <span>{{ data.contact.location }}</span>
         </li>
       </ul>

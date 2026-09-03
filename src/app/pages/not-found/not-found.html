@@ -1,0 +1,31 @@
+<section class="nf">
+  <div class="container inner">
+    <p class="code mono">
+      <span class="glitch" data-text="404">404</span>
+    </p>
+
+    <h1>You've drifted off the map <span class="emoji" aria-hidden="true">🛸</span></h1>
+    <p class="lede">
+      Nothing lives at this address. While you're here, pop the debris — it's the
+      only thing to do in deep space.
+    </p>
+
+    <div class="scoreline mono">
+      <span>Popped <b>{{ score() }}</b></span>
+      <span>Best <b>{{ best() }}</b></span>
+    </div>
+
+    <canvas
+      #canvas
+      class="board"
+      (pointerdown)="onTap($event)"
+      aria-label="Tap the drifting debris to pop it"
+      role="img"
+    ></canvas>
+
+    <a routerLink="/" class="btn btn-primary">
+      <span class="emoji" aria-hidden="true">🏠</span>
+      <span>Back to solid ground</span>
+    </a>
+  </div>
+</section>

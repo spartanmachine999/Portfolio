@@ -427,8 +427,119 @@ export class StarfieldComponent implements AfterViewInit, OnDestroy {
     this.drawSparks(ctx, accent, alt);
     this.drawShocks(ctx, accent);
 
+    if (this.theme.ascii()) this.asciiPass(ctx, accent);
+
     void dt;
   }
+
+  // ---------------------------------------------------------------------------
+  // ASCII pass
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Re-renders whatever was just drawn as ASCII art.
+   *
+   * Rather than sampling the scene objects individually, this downscales the
+   * finished frame with drawImage into a tiny canvas. The browser does that
+   * scale on the GPU and averages pixels for free, which is both faster and
+   * better looking than sampling by hand. Only the small canvas is read back,
+   * so getImageData stays cheap.
+   *
+   * Characters are drawn one row at a time: two fillText calls per row instead
+   * of one per cell, which is the difference between ~160 draw calls and ~10000.
+   */
+  private asciiPass(ctx: CanvasRenderingContext2D, accent: string): void {
+    const cell = 11;
+    const font = `${cell}px 'JetBrains Mono', ui-monospace, Consolas, monospace`;
+
+    // A monospace glyph advances roughly 0.6x the font size, not 1x. Deriving
+    // the column count from `cell` left the right third of the screen blank,
+    // so measure the real advance instead of assuming it.
+    if (this.charW <= 0 || this.charWFont !== font) {
+      ctx.font = font;
+      this.charW = ctx.measureText('M').width || cell * 0.6;
+      this.charWFont = font;
+    }
+
+    const cols = Math.max(1, Math.ceil(this.w / this.charW));
+    const rows = Math.max(1, Math.ceil(this.h / cell));
+
+    if (!this.offCanvas) this.offCanvas = document.createElement('canvas');
+    const off = this.offCanvas;
+    if (off.width !== cols || off.height !== rows) {
+      off.width = cols;
+      off.height = rows;
+      this.offCtx = off.getContext('2d', { willReadFrequently: true });
+    }
+    const octx = this.offCtx;
+    if (!octx) return;
+
+    octx.clearRect(0, 0, cols, rows);
+    octx.drawImage(this.canvasRef().nativeElement, 0, 0, cols, rows);
+
+    let data: Uint8ClampedArray;
+    try {
+      data = octx.getImageData(0, 0, cols, rows).data;
+    } catch {
+      return;
+    }
+
+    ctx.clearRect(0, 0, this.w, this.h);
+    ctx.font = font;
+    ctx.textBaseline = 'top';
+
+    const RAMP = ' .:-=+*#%@';
+    const t = performance.now() / 1000;
+
+    for (let y = 0; y < rows; y++) {
+      let dim = '';
+      let bright = '';
+
+      for (let x = 0; x < cols; x++) {
+        const i = (y * cols + x) * 4;
+        // Perceptual luminance, weighted by alpha since the canvas is transparent.
+        const a = data[i + 3] / 255;
+        const scene =
+          ((data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722) / 255) * a;
+
+        // The scene is mostly empty black, so sampling it alone leaves almost
+        // every cell as a space and the effect reads as a blank screen. A slow
+        // drifting interference field gives the whole grid faint characters to
+        // sit on, with the real scene punching through brighter on top.
+        const field =
+          (Math.sin(x * 0.22 + t * 0.7) +
+            Math.sin(y * 0.31 - t * 0.5) +
+            Math.sin((x + y) * 0.14 + t * 0.9)) /
+          3;
+        const lum = Math.min(1, scene * 2.4 + (field * 0.5 + 0.5) * 0.3);
+
+        const idx = Math.min(RAMP.length - 1, Math.max(0, Math.floor(lum * RAMP.length)));
+        const ch = RAMP[idx];
+
+        // Split into two passes so brightness reads through opacity as well as
+        // through character weight, while keeping draw calls at 2 per row.
+        if (idx >= 4) {
+          bright += ch;
+          dim += ' ';
+        } else {
+          dim += ch;
+          bright += ' ';
+        }
+      }
+
+      const py = y * cell;
+      ctx.fillStyle = `rgba(${accent}, 0.3)`;
+      ctx.fillText(dim, 0, py);
+      ctx.fillStyle = `rgba(${accent}, 0.95)`;
+      ctx.fillText(bright, 0, py);
+    }
+  }
+
+  private offCanvas: HTMLCanvasElement | null = null;
+  private offCtx: CanvasRenderingContext2D | null = null;
+  /** Measured monospace advance width, cached across frames. */
+  private charW = 0;
+  private charWFont = '';
 
   /**
    * Stars, batched into alpha bands.

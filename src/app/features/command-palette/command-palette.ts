@@ -5,14 +5,13 @@ import {
   computed,
   effect,
   inject,
-  output,
   signal,
   viewChild,
 } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
-import { MusicService } from '../../services/music.service';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService, ThemeMode } from '../../services/theme.service';
+import { UiService } from '../../services/ui.service';
 
 interface Command {
   id: string;
@@ -40,12 +39,9 @@ interface Command {
   styleUrl: './command-palette.css',
 })
 export class CommandPaletteComponent {
-  readonly closed = output<void>();
-  readonly playGame = output<void>();
-
   private readonly theme = inject(ThemeService);
   private readonly audio = inject(AudioService);
-  private readonly music = inject(MusicService);
+  private readonly ui = inject(UiService);
   private readonly data = inject(PortfolioDataService);
   private readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
 
@@ -58,8 +54,8 @@ export class CommandPaletteComponent {
       label: 'Play Meteor Defense',
       group: 'Fun',
       hint: 'G',
-      keywords: 'game arcade asteroid shooter space play fun',
-      run: () => this.playGame.emit(),
+      keywords: 'game arcade asteroid shooter space play fun rocket',
+      run: () => this.ui.openGame(),
     },
     {
       id: 'top',
@@ -105,18 +101,32 @@ export class CommandPaletteComponent {
       run: () => this.audio.toggle(),
     },
     {
-      id: 'music',
-      label: 'Play / Pause Music',
+      id: 'ascii',
+      label: 'Toggle ASCII Mode',
       group: 'Fun',
-      keywords: 'music song track daft punk house disco beat player',
-      run: () => this.music.toggle(),
+      keywords: 'ascii text art terminal matrix retro green',
+      run: () => this.theme.toggleAscii(),
     },
     {
-      id: 'nexttrack',
-      label: 'Next Track',
+      id: 'doodle',
+      label: 'Toggle Doodle Mode',
       group: 'Fun',
-      keywords: 'music skip song forward',
-      run: () => this.music.next(),
+      keywords: 'doodle notebook sketch chalk handwriting diary drawing',
+      run: () => this.theme.toggleDoodle(),
+    },
+    {
+      id: 'synth',
+      label: 'Open Synth Pad',
+      group: 'Fun',
+      keywords: 'synth music keyboard piano notes instrument play sound',
+      run: () => this.ui.openSynth(),
+    },
+    {
+      id: 'portal',
+      label: 'Portal Hop',
+      group: 'Fun',
+      keywords: 'portal random teleport jump dimension warp surprise',
+      run: () => this.ui.portalHop(),
     },
     {
       id: 'resume',
@@ -200,14 +210,14 @@ export class CommandPaletteComponent {
   exec(cmd: Command | undefined): void {
     if (!cmd) return;
     this.audio.play('click');
+    // Commands that open another overlay close this one themselves via
+    // UiService, so just run and dismiss.
     cmd.run();
-    // The game command opens its own overlay, so don't fight it for focus.
-    if (cmd.id !== 'game') this.close();
-    else this.closed.emit();
+    this.close();
   }
 
   close(): void {
-    this.closed.emit();
+    this.ui.closePalette();
   }
 
   /**

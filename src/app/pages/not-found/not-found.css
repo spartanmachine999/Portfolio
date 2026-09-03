@@ -1,0 +1,60 @@
+.nf {
+  min-height: calc(100svh - var(--header-h));
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 560px;
+}
+
+.code {
+  margin: 0;
+  font-size: clamp(4rem, 16vw, 8rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 42px var(--glow);
+}
+
+.nf h1 {
+  font-size: clamp(1.4rem, 4vw, 2.1rem);
+  margin: 8px 0 6px;
+}
+
+.lede {
+  margin-bottom: 18px;
+}
+
+.scoreline {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.scoreline b {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+.board {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  aspect-ratio: 480 / 300;
+  display: block;
+  margin-bottom: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  touch-action: manipulation;
+  cursor: crosshair;
+}

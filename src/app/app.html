@@ -5,62 +5,78 @@
 <app-cursor />
 <span class="crt-band" aria-hidden="true"></span>
 
+<!-- CRT power-off overlay. ThemeService drives this on every theme change. -->
+<div class="crt-shutdown" aria-hidden="true"><span class="crt-line"></span></div>
+
+<!-- Portal swirl for the random-section hop. -->
+<div class="portal-fx" [class.go]="ui.portalActive()" aria-hidden="true"></div>
+
+<!-- Original stick-figure doodles. Only visible in doodle mode. -->
+<svg class="doodle-art d1" viewBox="0 0 60 80" fill="none" stroke="currentColor"
+     stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+  <circle cx="30" cy="14" r="11" />
+  <path d="M30 25v28M30 33l-16 10M30 33l16 10M30 53l-12 22M30 53l12 22" />
+  <path d="M24 12c1.5-2 3-2 4 0M32 12c1.5-2 3-2 4 0" />
+  <path d="M25 19c3 2.5 7 2.5 10 0" />
+</svg>
+
+<svg class="doodle-art d2" viewBox="0 0 70 60" fill="none" stroke="currentColor"
+     stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+  <path d="M8 44c6-18 18-28 27-28s21 10 27 28" />
+  <path d="M4 44h62" />
+  <path d="M35 16V4M28 8l7-4 7 4" />
+  <circle cx="24" cy="34" r="3.4" />
+  <circle cx="46" cy="34" r="3.4" />
+</svg>
+
+<svg class="doodle-art d3" viewBox="0 0 50 70" fill="none" stroke="currentColor"
+     stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+  <path d="M25 6c8 0 14 7 14 16 0 11-14 16-14 26" />
+  <circle cx="25" cy="60" r="2.6" fill="currentColor" />
+</svg>
+
 <app-header />
 
 <main id="main">
-  <app-hero (playGame)="openGame()" (openPalette)="openPalette()" />
-
-  <!-- Track is duplicated so the marquee can loop seamlessly at -50%. -->
-  <div class="ticker" aria-hidden="true">
-    <div class="ticker-track">
-      @for (item of tickerItems; track $index) {
-        <span><b>//</b> {{ item }}</span>
-      }
-      @for (item of tickerItems; track $index) {
-        <span><b>//</b> {{ item }}</span>
-      }
-    </div>
-  </div>
-
-  <app-about />
-  <app-experience />
-  <app-projects />
-  <app-skills />
+  <router-outlet />
 </main>
 
 <app-footer />
 
-<app-control-dock (launchGame)="openGame()" />
-<app-music-player />
+<app-control-dock />
 
-<!-- Unlabelled on purpose: the rocket and asteroid are the whole invitation.
-     The aria-label still describes it properly for screen readers, who can't
-     "explore" a mystery button. -->
-<button type="button" class="game-fab" (click)="openGame()" aria-label="Launch mini game">
+<!-- Unlabelled on purpose: the rocket and comet are the whole invitation. The
+     aria-label still describes it for screen readers, who can't explore a
+     mystery button. -->
+<button type="button" class="game-fab" (click)="ui.openGame()" aria-label="Launch mini game">
   <!-- Literal character, not &#128640;. Numeric entities above U+FFFF get
-       truncated to 16 bits here, producing U+F680 (a Private Use Area glyph
-       that renders as tofu) instead of the rocket. -->
+       truncated to 16 bits here, yielding U+F680 (tofu) instead of the rocket. -->
   <span class="fab-rocket emoji" aria-hidden="true">🚀</span>
-  <!-- Comet glyph comes from .fab-rock::before so it can counter-rotate
-       inside the orbiting wrapper. Intentionally empty. -->
+  <!-- Comet comes from .fab-rock::before so it can counter-rotate. -->
   <span class="fab-rock emoji" aria-hidden="true"></span>
   <span class="fab-pulse" aria-hidden="true"></span>
 </button>
 
-@if (toast()) {
-  <div class="toast" [class.out]="toastLeaving()" role="status" aria-live="polite">
-    <span>{{ toast() }}</span>
+@if (ui.toast()) {
+  <div class="toast" [class.out]="ui.toastLeaving()" role="status" aria-live="polite">
+    <span>{{ ui.toast() }}</span>
   </div>
 }
 
-@defer (when paletteOpen()) {
-  @if (paletteOpen()) {
-    <app-command-palette (closed)="closePalette()" (playGame)="openGame()" />
+@defer (when ui.paletteOpen()) {
+  @if (ui.paletteOpen()) {
+    <app-command-palette />
   }
 }
 
-@defer (when gameOpen()) {
-  @if (gameOpen()) {
-    <app-asteroid-game (closed)="closeGame()" />
+@defer (when ui.synthOpen()) {
+  @if (ui.synthOpen()) {
+    <app-synth-pad (closed)="ui.closeSynth()" />
+  }
+}
+
+@defer (when ui.gameOpen()) {
+  @if (ui.gameOpen()) {
+    <app-asteroid-game (closed)="ui.closeGame()" />
   }
 }

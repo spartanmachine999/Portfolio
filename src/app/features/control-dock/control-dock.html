@@ -17,6 +17,26 @@
       <p class="d">{{ day() }}</p>
     </div>
 
+    @if (weather.data(); as w) {
+      <p class="wx">
+        <span class="emoji" aria-hidden="true">{{ w.icon }}</span>
+        <b>{{ w.temp }}&deg;C</b>
+        <span class="wx-label">{{ w.label }} in Delhi</span>
+      </p>
+    }
+
+    <hr class="rule" />
+
+    <ul class="zones">
+      @for (z of worldTimes(); track z.tz) {
+        <li>
+          <span class="emoji flag" aria-hidden="true">{{ z.flag }}</span>
+          <span class="zn">{{ z.label }}</span>
+          <span class="zt mono">{{ z.time }}</span>
+        </li>
+      }
+    </ul>
+
     <hr class="rule" />
 
     <fieldset class="group">
@@ -46,14 +66,38 @@
 
     <hr class="rule" />
 
+    <button type="button" class="row" (click)="toggleAscii()" [attr.aria-pressed]="ascii()">
+      <span class="ico emoji" aria-hidden="true">💾</span>
+      <span class="txt">ASCII</span>
+      <span class="state" [class.on]="ascii()">{{ ascii() ? 'On' : 'Off' }}</span>
+    </button>
+
+    <button type="button" class="row" (click)="toggleDoodle()" [attr.aria-pressed]="doodle()">
+      <span class="ico emoji" aria-hidden="true">✏️</span>
+      <span class="txt">Doodle</span>
+      <span class="state" [class.on]="doodle()">{{ doodle() ? 'On' : 'Off' }}</span>
+    </button>
+
     <button type="button" class="row" (click)="toggleSound()" [attr.aria-pressed]="soundOn()">
-      <span class="ico" aria-hidden="true">{{ soundOn() ? '♪' : '×' }}</span>
+      <span class="ico emoji" aria-hidden="true">🔊</span>
       <span class="txt">Sound</span>
       <span class="state" [class.on]="soundOn()">{{ soundOn() ? 'On' : 'Off' }}</span>
     </button>
 
+    <button type="button" class="row" (click)="ui.openSynth()">
+      <span class="ico emoji" aria-hidden="true">🎹</span>
+      <span class="txt">Synth pad</span>
+      <span class="state key">S</span>
+    </button>
+
+    <button type="button" class="row" (click)="ui.portalHop()">
+      <span class="ico emoji" aria-hidden="true">🌀</span>
+      <span class="txt">Portal hop</span>
+      <span class="state key">P</span>
+    </button>
+
     <!-- Unlabelled, same as the floating launcher. Let people poke it. -->
-    <button type="button" class="row play" (click)="onLaunch()" aria-label="Launch mini game">
+    <button type="button" class="row play" (click)="ui.openGame()" aria-label="Launch mini game">
       <span class="ico emoji" aria-hidden="true">🚀</span>
       <span class="txt emoji" aria-hidden="true">☄ &middot; ☄ &middot; ☄</span>
       <span class="state key">G</span>

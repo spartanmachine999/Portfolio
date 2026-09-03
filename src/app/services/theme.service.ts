@@ -10,7 +10,12 @@ export interface ThemeOption {
 }
 
 const STORAGE_KEY = 'ms-portfolio-theme';
+const ASCII_KEY = 'ms-portfolio-ascii';
+const DOODLE_KEY = 'ms-portfolio-doodle';
 const MODES: readonly ThemeMode[] = ['inferno', 'cyber', 'synth', 'acid', 'solar', 'void'];
+
+/** Matches the CRT shutdown animation length in styles.css. */
+const CRT_MS = 460;
 
 /**
  * Owns the visual mode of the site.
@@ -33,8 +38,16 @@ export class ThemeService {
 
   readonly mode = signal<ThemeMode>(this.read());
 
+  /** ASCII-art rendering of the background. */
+  readonly ascii = signal<boolean>(this.readFlag(ASCII_KEY));
+
+  /** Chalkboard + handwriting skin. */
+  readonly doodle = signal<boolean>(this.readFlag(DOODLE_KEY));
+
   /** True when the OS asks for reduced motion. Animations defer to this. */
   readonly reducedMotion = signal<boolean>(false);
+
+  private crtTimer?: number;
 
   constructor() {
     this.watchReducedMotion();
@@ -46,17 +59,71 @@ export class ThemeService {
       }
       this.write(mode);
     });
+
+    effect(() => {
+      const on = this.ascii();
+      document.documentElement.classList.toggle('ascii', on);
+      this.writeFlag(ASCII_KEY, on);
+    });
+
+    effect(() => {
+      const on = this.doodle();
+      document.documentElement.classList.toggle('doodle', on);
+      this.writeFlag(DOODLE_KEY, on);
+    });
   }
 
   set(mode: ThemeMode): void {
-    this.mode.set(mode);
+    if (mode === this.mode()) return;
+    this.crtSwitch(() => this.mode.set(mode));
   }
 
   /** Steps to the next mode. Used by the dock and the `T` shortcut. */
   cycle(): ThemeMode {
     const next = MODES[(MODES.indexOf(this.mode()) + 1) % MODES.length];
-    this.mode.set(next);
+    this.crtSwitch(() => this.mode.set(next));
     return next;
+  }
+
+  toggleAscii(): boolean {
+    const next = !this.ascii();
+    this.ascii.set(next);
+    return next;
+  }
+
+  toggleDoodle(): boolean {
+    const next = !this.doodle();
+    this.crtSwitch(() => this.doodle.set(next));
+    return next;
+  }
+
+  /**
+   * Runs `apply` behind a CRT power-off animation: the picture collapses to a
+   * bright line, the change happens while the screen is dark, then it powers
+   * back on. Swapping colours mid-blink hides the abrupt transition.
+   */
+  private crtSwitch(apply: () => void): void {
+    if (this.reducedMotion() || typeof document === 'undefined') {
+      apply();
+      return;
+    }
+
+    const root = document.documentElement;
+    if (this.crtTimer) {
+      // Mid-animation: just apply and let the running one finish.
+      apply();
+      return;
+    }
+
+    root.classList.add('crt-switching');
+    // Apply at the darkest point so the swap itself is never visible.
+    this.crtTimer = window.setTimeout(() => {
+      apply();
+      window.setTimeout(() => {
+        root.classList.remove('crt-switching');
+        this.crtTimer = undefined;
+      }, CRT_MS / 2);
+    }, CRT_MS / 2);
   }
 
   label(mode: ThemeMode = this.mode()): string {
@@ -77,8 +144,15 @@ export class ThemeService {
     }
   }
 
-  /** Accent as an `r, g, b` triple, for canvas work that needs alpha. */
+  /**
+   * Accent as an `r, g, b` triple, for canvas work that needs alpha.
+   *
+   * Doodle mode overrides --accent in CSS, but the canvas reads its colour from
+   * here rather than from computed styles — so this has to honour the skin too,
+   * otherwise the background stays the old colour while the UI turns yellow.
+   */
   accentRgb(): string {
+    if (this.doodle()) return '246, 226, 122';
     switch (this.mode()) {
       case 'cyber':
         return '0, 229, 255';
@@ -97,6 +171,7 @@ export class ThemeService {
 
   /** Secondary tone used for constellation lines and meteor cores. */
   accentAltRgb(): string {
+    if (this.doodle()) return '253, 243, 192';
     switch (this.mode()) {
       case 'cyber':
         return '120, 255, 240';
@@ -135,6 +210,22 @@ export class ThemeService {
       localStorage.setItem(STORAGE_KEY, mode);
     } catch {
       /* not fatal, the mode just won't survive a reload */
+    }
+  }
+
+  private readFlag(key: string): boolean {
+    try {
+      return localStorage.getItem(key) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  private writeFlag(key: string, on: boolean): void {
+    try {
+      localStorage.setItem(key, on ? '1' : '0');
+    } catch {
+      /* ignore */
     }
   }
 }

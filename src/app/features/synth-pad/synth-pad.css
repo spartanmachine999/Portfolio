@@ -1,0 +1,204 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 3vw, 26px);
+  background: rgba(3, 1, 2, 0.8);
+  backdrop-filter: blur(9px);
+  animation: fade 0.2s ease both;
+}
+
+.shell {
+  width: min(560px, 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(170deg, var(--surface-2), var(--bg));
+  box-shadow: 0 30px 90px -30px rgba(0, 0, 0, 0.95), 0 0 0 1px var(--accent-line);
+  overflow: hidden;
+  animation: pop 0.28s var(--ease-out-back) both;
+}
+
+/* ---- Bar ---- */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.bar h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  margin-right: auto;
+  font-size: 0.95rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.voices {
+  display: flex;
+  gap: 4px;
+}
+
+.voices button {
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-mute);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.voices button:hover {
+  color: var(--text);
+  border-color: var(--accent-line);
+}
+
+.voices button.on {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.x {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.x:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Pads ---- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 14px;
+}
+
+.pad {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  aspect-ratio: 4 / 3;
+  padding: 11px 13px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+  color: var(--text-dim);
+  overflow: hidden;
+  transition:
+    transform 0.08s var(--ease),
+    border-color 0.12s var(--ease),
+    box-shadow 0.12s var(--ease);
+}
+
+.pad:hover {
+  border-color: var(--accent-line);
+}
+
+/* Lit state is driven from TS, so touch and keyboard both light the pad. */
+.pad.lit {
+  transform: scale(0.95);
+  border-color: var(--accent);
+  background: linear-gradient(160deg, var(--accent-soft), var(--surface));
+  box-shadow: 0 0 26px -6px var(--glow), inset 0 0 20px var(--accent-soft);
+}
+
+.note {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.pad.lit .note {
+  color: var(--accent);
+}
+
+.kb {
+  align-self: flex-end;
+  font-size: 0.62rem;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  color: var(--text-mute);
+  text-transform: uppercase;
+}
+
+/* ---- Footer ---- */
+.hint {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 0.72rem;
+  color: var(--text-mute);
+  text-align: center;
+}
+
+.hint kbd {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 0.66rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+@media (max-width: 460px) {
+  .grid {
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .note {
+    font-size: 1.05rem;
+  }
+
+  .bar h2 {
+    font-size: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .shell {
+    animation: none;
+  }
+}

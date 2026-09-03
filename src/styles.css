@@ -1446,3 +1446,377 @@ input[type='range']::-moz-range-thumb {
   font-variant-emoji: emoji;
   line-height: 1;
 }
+
+/* ==========================================================================
+   17. CRT power-off transition
+   Plays whenever the theme or skin changes. ThemeService swaps the palette at
+   the animation's midpoint, so the colour change itself is never visible —
+   it happens while the screen is "off".
+   ========================================================================== */
+.crt-shutdown {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  pointer-events: none;
+  opacity: 0;
+  background: #000;
+}
+
+.crt-shutdown .crt-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, transparent, #fff 12%, #fff 88%, transparent);
+  box-shadow: 0 0 24px 6px var(--glow-hard, rgba(255, 255, 255, 0.6));
+}
+
+html.crt-switching .crt-shutdown {
+  animation: crt-veil 460ms ease both;
+}
+
+html.crt-switching .crt-shutdown .crt-line {
+  animation: crt-line 460ms ease both;
+}
+
+@keyframes crt-veil {
+  0% {
+    opacity: 0;
+  }
+  14%,
+  86% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes crt-line {
+  0% {
+    transform: scaleX(0) scaleY(1);
+    opacity: 0;
+  }
+  16% {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  44% {
+    transform: scaleX(1) scaleY(9);
+    opacity: 1;
+  }
+  56% {
+    transform: scaleX(1) scaleY(9);
+    opacity: 1;
+  }
+  84% {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(0) scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   18. ASCII mode
+   The background canvas re-renders itself as character art (see starfield).
+   Everything here is the supporting chrome for that.
+   ========================================================================== */
+html.ascii body {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+html.ascii .card,
+html.ascii .btn,
+html.ascii .badge {
+  border-radius: 0;
+}
+
+html.ascii .avatar {
+  border-radius: 0;
+  filter: grayscale(1) contrast(1.5) brightness(1.1);
+}
+
+html.ascii .orb .ring,
+html.ascii .orb .halo,
+html.ascii .grid-floor {
+  display: none;
+}
+
+html.ascii h1,
+html.ascii h2 {
+  letter-spacing: 0;
+}
+
+/* ==========================================================================
+   19. Doodle mode
+   Chalkboard skin: handwriting, wobbly hand-drawn borders, chalk palette.
+   All artwork here is original — hand-rolled SVG, no third-party assets.
+   ========================================================================== */
+html.doodle {
+  --bg: #1e2a26;
+  --bg-deep: #17211e;
+  --surface: #26332e;
+  --surface-2: #2d3b35;
+  --surface-3: #35443d;
+  --border: #46564e;
+  --border-strong: #5e7166;
+  --accent: #f6e27a;
+  --accent-soft: rgba(246, 226, 122, 0.12);
+  --accent-line: rgba(246, 226, 122, 0.34);
+  --glow: rgba(246, 226, 122, 0.26);
+  --glow-hard: rgba(246, 226, 122, 0.4);
+  --red-300: #fdf3c0;
+  --red-400: #f9ea9c;
+  --red-500: #f6e27a;
+  --red-600: #d9c25a;
+  --red-700: #a8933f;
+  --text: #f4f2e6;
+  --text-dim: #d3cfbc;
+  --text-mute: #9a9583;
+  --grain-opacity: 0.05;
+}
+
+/* Chalk handwriting. Caveat runs small, so bump the scale to compensate. */
+html.doodle body {
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+  font-size: clamp(1.15rem, 0.5vw + 1.05rem, 1.35rem);
+  letter-spacing: 0.01em;
+}
+
+html.doodle h1,
+html.doodle h2,
+html.doodle h3,
+html.doodle .btn,
+html.doodle .badge,
+html.doodle .section-title {
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+  letter-spacing: 0;
+}
+
+html.doodle h1 {
+  font-size: clamp(2.6rem, 7.5vw, 4.6rem);
+}
+
+/* Faint chalk dust and a board frame */
+html.doodle body::before {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 15%, rgba(255, 255, 255, 0.045), transparent 60%),
+    radial-gradient(ellipse 70% 45% at 80% 80%, rgba(255, 255, 255, 0.035), transparent 60%),
+    var(--bg-deep);
+}
+
+/* The classic asymmetric-radius trick reads as a hand-drawn box. */
+html.doodle .card {
+  border-radius: 255px 14px 225px 16px / 16px 225px 14px 255px;
+  border-width: 2px;
+  border-style: solid;
+}
+
+html.doodle .card:nth-child(even) {
+  border-radius: 16px 225px 14px 255px / 255px 14px 225px 16px;
+}
+
+html.doodle .btn,
+html.doodle .badge {
+  border-radius: 220px 14px 200px 16px / 14px 200px 16px 220px;
+  border-width: 2px;
+  border-style: solid;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* Underline drawn like a marker stroke */
+html.doodle .section-title::after {
+  height: 5px;
+  border-radius: 60% 40% 55% 45% / 100% 100% 100% 100%;
+  background: var(--accent);
+}
+
+/* The chalkboard has no business emitting scanlines */
+html.doodle::before,
+html.doodle .crt-band,
+html.doodle .grid-floor {
+  display: none;
+}
+
+html.doodle .avatar {
+  border-radius: 48% 52% 45% 55% / 55% 45% 52% 48%;
+  border-width: 3px;
+}
+
+html.doodle .mono,
+html.doodle kbd,
+html.doodle .ticker-track span {
+  font-family: 'Caveat', cursive;
+  letter-spacing: 0.04em;
+}
+
+/* Stick-figure doodles, drawn as inline SVG in app.html */
+.doodle-art {
+  display: none;
+}
+
+html.doodle .doodle-art {
+  display: block;
+  /* Fixed, not absolute: absolute would place them once against the full page
+     height and they'd only be visible at one scroll position. */
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  color: var(--text-dim);
+}
+
+html.doodle .doodle-art.d1 {
+  top: 12%;
+  right: 4%;
+  width: 88px;
+  transform: rotate(8deg);
+}
+
+html.doodle .doodle-art.d2 {
+  bottom: 8%;
+  left: 3%;
+  width: 76px;
+  transform: rotate(-11deg);
+}
+
+html.doodle .doodle-art.d3 {
+  top: 42%;
+  left: 6%;
+  width: 64px;
+  transform: rotate(15deg);
+}
+
+@media (max-width: 900px) {
+  html.doodle .doodle-art {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   20. Portal hop
+   ========================================================================== */
+.portal-fx {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 185;
+  width: 40vmax;
+  height: 40vmax;
+  margin: -20vmax 0 0 -20vmax;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  /* Original swirl: layered conic + radial gradients, no imagery. */
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, transparent 18%),
+    conic-gradient(
+      from 0deg,
+      #7ee07a,
+      #2fbf5f,
+      #d9f97a,
+      #35c96b,
+      #a8f07e,
+      #2fbf5f,
+      #7ee07a
+    );
+  filter: blur(6px) saturate(1.3);
+  box-shadow:
+    0 0 90px 30px rgba(126, 224, 122, 0.55),
+    inset 0 0 60px rgba(255, 255, 255, 0.35);
+}
+
+.portal-fx.go {
+  animation: portal-open 1s cubic-bezier(0.3, 0.9, 0.3, 1) both;
+}
+
+@keyframes portal-open {
+  0% {
+    opacity: 0;
+    transform: scale(0.05) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1) rotate(220deg);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.05) rotate(420deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.02) rotate(700deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-shutdown,
+  .crt-shutdown .crt-line,
+  .portal-fx {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   21. Dock: weather + world clocks
+   Global rather than in control-dock.css purely to keep that component inside
+   its 4kB stylesheet budget.
+   -------------------------------------------------------------------------- */
+.wx {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 0;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.wx b {
+  color: var(--accent);
+  font-size: 0.86rem;
+}
+
+.wx-label {
+  color: var(--text-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.zones li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.zones .flag {
+  font-size: 0.8rem;
+  flex: none;
+}
+
+.zones .zn {
+  flex: 1;
+}
+
+.zones .zt {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}

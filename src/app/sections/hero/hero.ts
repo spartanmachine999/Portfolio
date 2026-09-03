@@ -4,12 +4,12 @@ import {
   OnDestroy,
   OnInit,
   inject,
-  output,
   signal,
 } from '@angular/core';
 import { RevealDirective } from '../../directives/reveal.directive';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService } from '../../services/theme.service';
+import { UiService } from '../../services/ui.service';
 
 @Component({
   selector: 'app-hero',
@@ -20,10 +20,8 @@ import { ThemeService } from '../../services/theme.service';
   styleUrl: './hero.css',
 })
 export class HeroComponent implements OnInit, OnDestroy {
-  readonly playGame = output<void>();
-  readonly openPalette = output<void>();
-
   protected readonly data = inject(PortfolioDataService);
+  protected readonly ui = inject(UiService);
   private readonly theme = inject(ThemeService);
 
   readonly avatarSrc = '/profile.jpg';
