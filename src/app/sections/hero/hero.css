@@ -129,17 +129,25 @@ h1 {
   gap: 12px;
 }
 
-/* Little play triangle on the game button */
-.pico {
-  width: 0;
-  height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 8px solid currentColor;
+/* Unlabelled curiosity button. Emoji only, no text. */
+.mystery {
+  gap: 6px;
+  padding-inline: 16px;
+  font-size: 1.05rem;
+  border-color: var(--accent-line);
+  animation: glow-pulse 2.8s ease-in-out infinite;
 }
 
-.play-btn {
-  animation: glow-pulse 2.8s ease-in-out infinite;
+.mystery .rock {
+  font-size: 0.78em;
+  display: inline-block;
+  animation: tumble 4.5s linear infinite;
+}
+
+@keyframes tumble {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes glow-pulse {
@@ -303,7 +311,8 @@ h1 {
   .r2,
   .halo,
   .name,
-  .play-btn,
+  .mystery,
+  .mystery .rock,
   .beacon::after {
     animation: none;
   }

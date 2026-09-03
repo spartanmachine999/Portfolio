@@ -67,38 +67,132 @@
   --badge-glow: var(--accent-soft);
 }
 
-/* Theme mode: Crimson — deeper, moodier red */
-:root[data-theme='crimson'] {
-  --red-500: #d8232f;
-  --red-400: #e8434f;
-  --red-600: #a3131c;
-  --accent-soft: rgba(216, 35, 47, 0.16);
-  --accent-line: rgba(216, 35, 47, 0.34);
-  --glow: rgba(216, 35, 47, 0.32);
-  --glow-hard: rgba(216, 35, 47, 0.52);
-  --surface: #16070a;
-  --surface-2: #1f0a0e;
-  --border: #3d1015;
-  --glow-strength: 0.75;
-  --meteor-density: 0.7;
+/* --------------------------------------------------------------------------
+   Theme modes — six of them, all dark, deliberately contrasting.
+   Each one retunes the accent ramp plus the surface/border tints so the whole
+   page shifts, not just the highlight colour.
+   -------------------------------------------------------------------------- */
+
+/* Cyber — ice blue on blue-black */
+html[data-theme='cyber'] {
+  --bg: #010508;
+  --bg-deep: #000206;
+  --surface: #061218;
+  --surface-2: #0a1a22;
+  --surface-3: #0e232d;
+  --border: #123540;
+  --border-strong: #1b5364;
+  --red-300: #9df4ff;
+  --red-400: #4de8ff;
+  --red-500: #00e5ff;
+  --red-600: #00a8c4;
+  --red-700: #016f83;
+  --accent: #00e5ff;
+  --accent-soft: rgba(0, 229, 255, 0.12);
+  --accent-line: rgba(0, 229, 255, 0.32);
+  --glow: rgba(0, 229, 255, 0.36);
+  --glow-hard: rgba(0, 229, 255, 0.6);
+  --text: #eaf9ff;
+  --text-dim: #a2bfc9;
+  --text-mute: #6a838d;
 }
 
-/* Theme mode: Void — minimal, calm, effects dialled right down */
-:root[data-theme='void'] {
-  --bg: #000000;
-  --surface: #0c0708;
-  --surface-2: #130a0c;
-  --surface-3: #1a0d0f;
-  --border: #2a1215;
-  --border-strong: #43181d;
-  --accent: #ff5252;
-  --accent-soft: rgba(255, 82, 82, 0.09);
-  --glow: rgba(255, 82, 82, 0.16);
-  --glow-hard: rgba(255, 82, 82, 0.28);
-  --text-dim: #9c9496;
-  --glow-strength: 0.25;
-  --meteor-density: 0;
-  --grain-opacity: 0.02;
+/* Synth — neon magenta on violet-black */
+html[data-theme='synth'] {
+  --bg: #07030d;
+  --bg-deep: #030109;
+  --surface: #150a22;
+  --surface-2: #1e0e2f;
+  --surface-3: #28133d;
+  --border: #3d1a5a;
+  --border-strong: #5c2685;
+  --red-300: #ffa8f0;
+  --red-400: #ff6be4;
+  --red-500: #ff2bd6;
+  --red-600: #c515a5;
+  --red-700: #8a0f73;
+  --accent: #ff2bd6;
+  --accent-soft: rgba(255, 43, 214, 0.13);
+  --accent-line: rgba(255, 43, 214, 0.34);
+  --glow: rgba(255, 43, 214, 0.38);
+  --glow-hard: rgba(180, 90, 255, 0.62);
+  --text: #fdeaff;
+  --text-dim: #c3a8d4;
+  --text-mute: #8a6f9c;
+}
+
+/* Acid — toxic lime on green-black */
+html[data-theme='acid'] {
+  --bg: #040701;
+  --bg-deep: #010300;
+  --surface: #0d1505;
+  --surface-2: #131f07;
+  --surface-3: #1b2b0a;
+  --border: #2c440f;
+  --border-strong: #456a17;
+  --red-300: #ddff9c;
+  --red-400: #c4ff5c;
+  --red-500: #a3ff12;
+  --red-600: #7ac400;
+  --red-700: #4f8000;
+  --accent: #a3ff12;
+  --accent-soft: rgba(163, 255, 18, 0.11);
+  --accent-line: rgba(163, 255, 18, 0.3);
+  --glow: rgba(163, 255, 18, 0.32);
+  --glow-hard: rgba(163, 255, 18, 0.55);
+  --text: #f2ffe4;
+  --text-dim: #b4c9a0;
+  --text-mute: #78896a;
+}
+
+/* Solar — molten amber on warm black */
+html[data-theme='solar'] {
+  --bg: #080401;
+  --bg-deep: #040200;
+  --surface: #1a0e03;
+  --surface-2: #241405;
+  --surface-3: #301b07;
+  --border: #4a2a0b;
+  --border-strong: #714113;
+  --red-300: #ffd79c;
+  --red-400: #ffbe5c;
+  --red-500: #ff9f1c;
+  --red-600: #d97400;
+  --red-700: #8f4c00;
+  --accent: #ff9f1c;
+  --accent-soft: rgba(255, 159, 28, 0.12);
+  --accent-line: rgba(255, 159, 28, 0.32);
+  --glow: rgba(255, 159, 28, 0.36);
+  --glow-hard: rgba(255, 120, 20, 0.6);
+  --text: #fff4e6;
+  --text-dim: #cbb298;
+  --text-mute: #8d7660;
+}
+
+/* Void — monochrome, quiet, effects dialled right back */
+html[data-theme='void'] {
+  --bg: #050505;
+  --bg-deep: #000000;
+  --surface: #0d0d0e;
+  --surface-2: #141416;
+  --surface-3: #1c1c1f;
+  --border: #2a2a2d;
+  --border-strong: #414146;
+  --red-300: #ececef;
+  --red-400: #d8d8dc;
+  --red-500: #c9c9ce;
+  --red-600: #9a9aa0;
+  --red-700: #6a6a70;
+  --accent: #d2d2d6;
+  --accent-soft: rgba(210, 210, 214, 0.08);
+  --accent-line: rgba(210, 210, 214, 0.22);
+  --glow: rgba(210, 210, 214, 0.18);
+  --glow-hard: rgba(210, 210, 214, 0.3);
+  --text: #f2f2f4;
+  --text-dim: #a8a8ae;
+  --text-mute: #71717a;
+  --glow-strength: 0.3;
+  --grain-opacity: 0.018;
 }
 
 /* --------------------------------------------------------------------------
@@ -139,10 +233,23 @@ body::before {
   inset: 0;
   z-index: -3;
   pointer-events: none;
+  /* Derived from --accent so every theme gets its own ambient wash. */
   background:
-    radial-gradient(ellipse 120% 80% at 15% -10%, rgba(190, 24, 32, 0.3), transparent 60%),
-    radial-gradient(ellipse 100% 70% at 90% 5%, rgba(120, 12, 20, 0.22), transparent 55%),
-    radial-gradient(ellipse 130% 90% at 50% 105%, rgba(90, 8, 14, 0.28), transparent 60%),
+    radial-gradient(
+      ellipse 120% 80% at 15% -10%,
+      color-mix(in srgb, var(--accent) 22%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 100% 70% at 90% 5%,
+      color-mix(in srgb, var(--accent) 13%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 130% 90% at 50% 105%,
+      color-mix(in srgb, var(--accent) 16%, transparent),
+      transparent 60%
+    ),
     var(--bg-deep);
 }
 
@@ -282,6 +389,17 @@ p {
 section {
   padding-block: clamp(56px, 9vw, 108px);
   position: relative;
+}
+
+/* Skip layout, paint and animation work for sections that are off screen.
+   contain-intrinsic-size supplies a placeholder height so the scrollbar
+   doesn't jump around as sections are skipped and un-skipped. */
+#about,
+#experience,
+#projects,
+#skills {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
 }
 
 main {
@@ -757,15 +875,18 @@ html::before {
   inset: 0;
   z-index: 95;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.42;
   background: repeating-linear-gradient(
     180deg,
     rgba(0, 0, 0, 0) 0px,
     rgba(0, 0, 0, 0) 2px,
-    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0.26) 3px,
     rgba(0, 0, 0, 0) 4px
   );
-  mix-blend-mode: multiply;
+  /* Deliberately NOT mix-blend-mode. Blending a fullscreen overlay against
+     everything beneath it forces a recomposite of the whole page every frame,
+     which was a major source of the scroll jank. Plain alpha looks near
+     identical here and composites on the GPU for free. */
 }
 
 /* --- Vignette + a slow rolling refresh band --- */
@@ -931,7 +1052,7 @@ html[data-theme='void'] .crt-band {
     from var(--ang, 0deg),
     transparent 0deg,
     var(--accent) 40deg,
-    #00eaff 70deg,
+    color-mix(in srgb, var(--accent) 45%, #ffffff) 70deg,
     transparent 130deg,
     transparent 360deg
   );
@@ -974,7 +1095,11 @@ html[data-theme='void'] .crt-band {
   overflow: hidden;
   display: flex;
   border-block: 1px solid var(--border);
-  background: linear-gradient(90deg, rgba(255, 60, 60, 0.06), rgba(0, 234, 255, 0.03));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 7%, transparent),
+    transparent
+  );
   padding-block: 9px;
   /* Fade the ends so text doesn't hard-cut at the edges. */
   -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
@@ -1175,8 +1300,16 @@ html.has-cursor textarea {
   z-index: -1;
   opacity: 0.5;
   background-image:
-    linear-gradient(to right, rgba(255, 60, 60, 0.28) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 60, 60, 0.2) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--accent) 30%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--accent) 22%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 46px 46px;
   /* Fade out toward the horizon so it doesn't look like a hard-edged plane. */
   -webkit-mask: linear-gradient(to top, #000, transparent 78%);
@@ -1256,4 +1389,60 @@ html[data-theme='void'] .grid-floor {
   .grid-floor {
     animation: none;
   }
+}
+
+/* --------------------------------------------------------------------------
+   15. Range inputs
+   Generic form chrome, kept global so component sheets stay inside budget.
+   -------------------------------------------------------------------------- */
+input[type='range'] {
+  width: 100%;
+  height: 3px;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 2px;
+  background: var(--border-strong);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--glow);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--glow);
+}
+
+/* --------------------------------------------------------------------------
+   16. Emoji
+   Poppins carries no emoji glyphs, so without an explicit fallback stack the
+   rocket and comet render as tofu boxes on some systems. Listing the platform
+   emoji fonts first fixes it everywhere.
+   -------------------------------------------------------------------------- */
+.emoji,
+.emoji::before {
+  font-family:
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji',
+    'Android Emoji',
+    'EmojiSymbols',
+    sans-serif;
+  font-variant-emoji: emoji;
+  line-height: 1;
 }

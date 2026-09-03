@@ -12,8 +12,10 @@
 /* Only fog the backdrop once the page has actually scrolled — over the hero
    the header should feel like part of the sky. */
 .site-header.is-scrolled {
-  background: rgba(6, 3, 4, 0.72);
-  backdrop-filter: saturate(150%) blur(14px);
+  /* Opaque enough to read against, with a small blur radius. A large radius
+     here is surprisingly expensive because it re-blurs on every scroll frame. */
+  background: color-mix(in srgb, var(--bg-deep) 88%, transparent);
+  backdrop-filter: blur(8px);
   border-bottom-color: var(--border);
 }
 

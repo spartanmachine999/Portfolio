@@ -108,56 +108,71 @@
 }
 
 .group legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
   padding: 0;
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-mute);
-  margin-bottom: 7px;
+  margin-bottom: 8px;
 }
 
+.active-name {
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Six swatches in a single row of circles — compact enough that adding
+   themes doesn't make the dock grow taller. */
 .swatches {
   display: grid;
-  gap: 5px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
 }
 
 .swatch {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 9px;
-  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 50%;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-dim);
-  font-size: 0.78rem;
-  text-align: left;
   transition: all var(--dur-fast) var(--ease);
 }
 
 .swatch:hover {
-  background: var(--accent-soft);
-  color: var(--text);
-}
-
-.swatch.on {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--text);
+  transform: translateY(-2px);
 }
 
 .chip {
-  width: 15px;
-  height: 15px;
-  flex: none;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--sw, var(--accent));
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   transition: box-shadow var(--dur-fast) var(--ease);
 }
 
+.swatch.on {
+  border-color: color-mix(in srgb, var(--sw, var(--accent)) 70%, transparent);
+}
+
 .swatch.on .chip {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw, var(--accent)) 30%, transparent);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 10px color-mix(in srgb, var(--sw, var(--accent)) 60%, transparent);
+}
+
+.hint-line {
+  margin: 8px 0 0;
+  font-size: 0.66rem;
+  color: var(--text-mute);
+  text-align: center;
 }
 
 /* ---- Rows ---- */

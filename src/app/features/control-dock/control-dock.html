@@ -20,8 +20,11 @@
     <hr class="rule" />
 
     <fieldset class="group">
-      <legend>Mode</legend>
-      <div class="swatches" role="radiogroup" aria-label="Colour mode">
+      <legend>
+        Theme
+        <span class="active-name">{{ activeTheme().label }}</span>
+      </legend>
+      <div class="swatches" role="radiogroup" aria-label="Colour theme">
         @for (opt of themeOptions; track opt.id) {
           <button
             type="button"
@@ -29,15 +32,16 @@
             role="radio"
             [class.on]="mode() === opt.id"
             [attr.aria-checked]="mode() === opt.id"
+            [attr.aria-label]="opt.label + ', ' + opt.hint"
             [style.--sw]="opt.swatch"
             [title]="opt.label + ' — ' + opt.hint"
             (click)="pickTheme(opt.id)"
           >
             <span class="chip" aria-hidden="true"></span>
-            <span class="label">{{ opt.label }}</span>
           </button>
         }
       </div>
+      <p class="hint-line">{{ activeTheme().hint }}</p>
     </fieldset>
 
     <hr class="rule" />
@@ -48,9 +52,10 @@
       <span class="state" [class.on]="soundOn()">{{ soundOn() ? 'On' : 'Off' }}</span>
     </button>
 
-    <button type="button" class="row play" (click)="onLaunch()">
-      <span class="ico" aria-hidden="true">▶</span>
-      <span class="txt">Meteor Defense</span>
+    <!-- Unlabelled, same as the floating launcher. Let people poke it. -->
+    <button type="button" class="row play" (click)="onLaunch()" aria-label="Launch mini game">
+      <span class="ico emoji" aria-hidden="true">🚀</span>
+      <span class="txt emoji" aria-hidden="true">☄ &middot; ☄ &middot; ☄</span>
       <span class="state key">G</span>
     </button>
   </div>

@@ -3,22 +3,31 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  NgZone,
   OnDestroy,
-  effect,
   inject,
   viewChild,
 } from '@angular/core';
+import { RafService } from '../../services/raf.service';
 import { ThemeService } from '../../services/theme.service';
 
+/** Decorative background star. Parallax + twinkle only, no physics. */
 interface Star {
   x: number;
   y: number;
   depth: number;
   r: number;
   alpha: number;
-  twinkleRate: number;
+  rate: number;
   phase: number;
+}
+
+/** Constellation node. Drifts, reacts to the cursor and to shockwaves. */
+interface Node {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
 }
 
 interface Meteor {
@@ -33,7 +42,7 @@ interface Meteor {
   fireball: boolean;
 }
 
-interface Ember {
+interface Spark {
   x: number;
   y: number;
   vx: number;
@@ -43,22 +52,34 @@ interface Ember {
   size: number;
 }
 
+interface Shock {
+  x: number;
+  y: number;
+  life: number;
+  maxLife: number;
+  r: number;
+}
+
+const ALPHA_BUCKETS = 6;
+
 /**
- * The animated background: a parallax starfield with a meteor shower over it.
+ * The interactive background: parallax starfield, cursor-reactive constellation
+ * network, meteor shower, and click shockwaves.
  *
- * Replaces the original implementation, which appended a new `<div>` to the
- * DOM every 300ms forever via setInterval. That approach never stopped, never
- * cleaned up, and thrashed layout. This draws everything to a single canvas.
+ * This is deliberately ONE canvas driven by ONE shared frame loop. It previously
+ * shared the screen with a second full-page canvas for click effects and a third
+ * rAF for the cursor; consolidating removed two composited layers and two
+ * independent loops, which is most of the smoothness win.
  *
- * Notes on the things that matter here:
- *  - The render loop runs OUTSIDE the Angular zone. If it didn't, every frame
- *    would trigger change detection and the whole app would re-render 60x/sec.
- *  - Rendering pauses when the tab is hidden, so it stops burning battery in
- *    a background tab.
- *  - Meteors radiate from one off-screen point, which is what real showers do
- *    and reads far better than independent random streaks.
- *  - Density follows the theme mode; `void` switches meteors off completely,
- *    as does the OS reduced-motion setting.
+ * Performance notes, since this runs every frame:
+ *  - Stars are drawn in alpha buckets. Instead of one fillStyle write and one
+ *    path per star (280 state changes), stars are grouped into 6 opacity bands
+ *    and each band is a single path. Roughly 12 draw calls total.
+ *  - Distance tests compare squared values; no sqrt in the hot loop.
+ *  - The constellation network runs over a small node population (~90) rather
+ *    than every star, keeping the O(n^2) link search cheap.
+ *  - Quality follows RafService, so slow devices shed particles automatically
+ *    rather than dropping frames.
  */
 @Component({
   selector: 'app-starfield',
@@ -85,31 +106,30 @@ interface Ember {
 })
 export class StarfieldComponent implements AfterViewInit, OnDestroy {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-  private readonly zone = inject(NgZone);
+  private readonly raf = inject(RafService);
   private readonly theme = inject(ThemeService);
 
   private ctx: CanvasRenderingContext2D | null = null;
-  private raf = 0;
-  private running = false;
+  private stop?: () => void;
 
   private w = 0;
   private h = 0;
   private dpr = 1;
 
   private stars: Star[] = [];
+  private nodes: Node[] = [];
   private meteors: Meteor[] = [];
-  private embers: Ember[] = [];
+  private sparks: Spark[] = [];
+  private shocks: Shock[] = [];
 
   private scrollY = 0;
-  private pointerX = 0;
-  private pointerY = 0;
-  private targetPX = 0;
-  private targetPY = 0;
+  private mx = -9999;
+  private my = -9999;
+  private tmx = -9999;
+  private tmy = -9999;
+  private pointerInside = false;
 
-  private lastFrame = 0;
-  private spawnAccumulator = 0;
-
-  /** Meteors originate from here (just off the top-right corner). */
+  private spawnAcc = 0;
   private radiantX = 0;
   private radiantY = 0;
 
@@ -117,25 +137,22 @@ export class StarfieldComponent implements AfterViewInit, OnDestroy {
   private readonly onScroll = () => {
     this.scrollY = window.scrollY || 0;
   };
+
   private readonly onPointerMove = (e: PointerEvent) => {
-    this.targetPX = e.clientX;
-    this.targetPY = e.clientY;
-  };
-  private readonly onVisibility = () => {
-    if (document.hidden) this.stop();
-    else this.start();
+    this.tmx = e.clientX;
+    this.tmy = e.clientY;
+    this.pointerInside = true;
   };
 
-  constructor() {
-    // React to theme changes: void mode clears the sky, others repopulate it.
-    effect(() => {
-      const density = this.theme.meteorDensity();
-      if (density === 0) {
-        this.meteors = [];
-        this.embers = [];
-      }
-    });
-  }
+  private readonly onPointerLeave = () => {
+    this.pointerInside = false;
+    this.tmx = -9999;
+    this.tmy = -9999;
+  };
+
+  private readonly onPointerDown = (e: PointerEvent) => {
+    this.shock(e.clientX, e.clientY);
+  };
 
   ngAfterViewInit(): void {
     const canvas = this.canvasRef().nativeElement;
@@ -147,168 +164,218 @@ export class StarfieldComponent implements AfterViewInit, OnDestroy {
     window.addEventListener('resize', this.onResize, { passive: true });
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('pointermove', this.onPointerMove, { passive: true });
-    document.addEventListener('visibilitychange', this.onVisibility);
+    window.addEventListener('pointerdown', this.onPointerDown, { passive: true });
+    document.addEventListener('pointerleave', this.onPointerLeave);
 
     if (this.theme.reducedMotion()) {
-      // Draw one static frame so the sky is still there, just still.
-      this.drawStatic();
+      this.render(0);
       return;
     }
 
-    this.start();
-  }
-
-  ngOnDestroy(): void {
-    this.stop();
-    window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('scroll', this.onScroll);
-    window.removeEventListener('pointermove', this.onPointerMove);
-    document.removeEventListener('visibilitychange', this.onVisibility);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Loop control
-  // ---------------------------------------------------------------------------
-
-  private start(): void {
-    if (this.running || this.theme.reducedMotion() || !this.ctx) return;
-    this.running = true;
-    this.lastFrame = performance.now();
-    // Critical: keep the frame loop out of Angular's zone.
-    this.zone.runOutsideAngular(() => {
-      this.raf = requestAnimationFrame((t) => this.frame(t));
+    this.stop = this.raf.add((dt) => {
+      this.update(dt);
+      this.render(dt);
     });
   }
 
-  private stop(): void {
-    this.running = false;
-    if (this.raf) cancelAnimationFrame(this.raf);
-    this.raf = 0;
+  ngOnDestroy(): void {
+    this.stop?.();
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('pointermove', this.onPointerMove);
+    window.removeEventListener('pointerdown', this.onPointerDown);
+    document.removeEventListener('pointerleave', this.onPointerLeave);
   }
 
   // ---------------------------------------------------------------------------
-  // Sizing
+  // Sizing / seeding
   // ---------------------------------------------------------------------------
 
   private resize(): void {
     const canvas = this.canvasRef().nativeElement;
-    // Cap DPR at 2 — beyond that the pixel cost buys almost nothing visually.
+    // Capping DPR at 2 costs almost nothing visually and saves a lot of fill.
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.w = window.innerWidth;
     this.h = window.innerHeight;
 
     canvas.width = Math.floor(this.w * this.dpr);
     canvas.height = Math.floor(this.h * this.dpr);
-
     this.ctx?.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
     this.radiantX = this.w * 1.05;
     this.radiantY = -this.h * 0.15;
 
-    this.seedStars();
-    if (this.theme.reducedMotion()) this.drawStatic();
+    this.seed();
+    if (this.theme.reducedMotion()) this.render(0);
   }
 
-  private seedStars(): void {
-    // Scale with viewport area, but keep phones light.
+  private seed(): void {
+    const q = this.raf.quality();
     const area = this.w * this.h;
-    const count = Math.round(Math.min(280, Math.max(60, area / 7800)));
 
-    this.stars = Array.from({ length: count }, () => {
+    const starCount = Math.round(Math.min(300, Math.max(50, area / 7200)) * q);
+    this.stars = Array.from({ length: starCount }, () => {
       const depth = Math.random();
       return {
         x: Math.random() * this.w,
         y: Math.random() * this.h,
         depth,
-        r: 0.4 + depth * 1.5,
-        alpha: 0.22 + Math.random() * 0.6,
-        twinkleRate: 0.4 + Math.random() * 1.6,
+        r: 0.4 + depth * 1.4,
+        alpha: 0.2 + Math.random() * 0.62,
+        rate: 0.4 + Math.random() * 1.7,
         phase: Math.random() * Math.PI * 2,
       };
     });
+
+    // Node count is what drives the O(n^2) link search, so keep it modest and
+    // scale it down hard on small screens.
+    const nodeCount = Math.round(Math.min(95, Math.max(22, area / 20000)) * q);
+    this.nodes = Array.from({ length: nodeCount }, () => ({
+      x: Math.random() * this.w,
+      y: Math.random() * this.h,
+      vx: (Math.random() - 0.5) * 16,
+      vy: (Math.random() - 0.5) * 16,
+      r: 1 + Math.random() * 1.6,
+    }));
   }
 
   // ---------------------------------------------------------------------------
-  // Frame
+  // Simulation
   // ---------------------------------------------------------------------------
 
-  private frame(now: number): void {
-    if (!this.running || !this.ctx) return;
+  private update(dt: number): void {
+    // Ease the tracked pointer so the network reacts smoothly, not jitterily.
+    if (this.pointerInside) {
+      this.mx += (this.tmx - this.mx) * Math.min(1, dt * 9);
+      this.my += (this.tmy - this.my) * Math.min(1, dt * 9);
+    } else {
+      this.mx = -9999;
+      this.my = -9999;
+    }
 
-    // Clamp dt so a backgrounded tab doesn't produce one giant jump.
-    const dt = Math.min((now - this.lastFrame) / 1000, 0.05);
-    this.lastFrame = now;
+    this.updateNodes(dt);
+    this.updateMeteors(dt);
+    this.updateSparks(dt);
+    this.updateShocks(dt);
 
-    this.update(dt, now);
-    this.render(now);
-
-    this.raf = requestAnimationFrame((t) => this.frame(t));
+    for (const s of this.stars) s.phase += s.rate * dt;
   }
 
-  private update(dt: number, now: number): void {
-    // Ease the parallax pointer toward the real cursor.
-    this.pointerX += (this.targetPX - this.pointerX) * Math.min(1, dt * 3.5);
-    this.pointerY += (this.targetPY - this.pointerY) * Math.min(1, dt * 3.5);
+  private updateNodes(dt: number): void {
+    const influence = 170;
+    const inf2 = influence * influence;
 
-    const density = this.theme.meteorDensity();
+    for (const n of this.nodes) {
+      // Cursor repulsion — nodes shy away from the pointer.
+      if (this.mx > -9000) {
+        const dx = n.x - this.mx;
+        const dy = n.y - this.my;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < inf2 && d2 > 0.01) {
+          const d = Math.sqrt(d2);
+          const force = (1 - d / influence) * 240;
+          n.vx += (dx / d) * force * dt;
+          n.vy += (dy / d) * force * dt;
+        }
+      }
 
+      // Shockwaves shove nodes outward as the ring passes them.
+      for (const s of this.shocks) {
+        const dx = n.x - s.x;
+        const dy = n.y - s.y;
+        const d = Math.sqrt(dx * dx + dy * dy) || 1;
+        const band = Math.abs(d - s.r);
+        if (band < 46) {
+          const force = (1 - band / 46) * 520 * (1 - s.life / s.maxLife);
+          n.vx += (dx / d) * force * dt;
+          n.vy += (dy / d) * force * dt;
+        }
+      }
+
+      n.x += n.vx * dt;
+      n.y += n.vy * dt;
+
+      // Drag, so pushes settle instead of accelerating forever.
+      n.vx *= 0.975;
+      n.vy *= 0.975;
+
+      // Keep a slow ambient drift going.
+      const speed = Math.hypot(n.vx, n.vy);
+      if (speed < 5) {
+        n.vx += (Math.random() - 0.5) * 9 * dt * 10;
+        n.vy += (Math.random() - 0.5) * 9 * dt * 10;
+      }
+
+      // Wrap at the edges.
+      if (n.x < -20) n.x = this.w + 20;
+      else if (n.x > this.w + 20) n.x = -20;
+      if (n.y < -20) n.y = this.h + 20;
+      else if (n.y > this.h + 20) n.y = -20;
+    }
+  }
+
+  private updateMeteors(dt: number): void {
+    const density = this.theme.meteorDensity() * this.raf.quality();
     if (density > 0) {
-      // Roughly one meteor every 0.55s at full density.
-      this.spawnAccumulator += dt * density;
-      const interval = 0.55;
-      while (this.spawnAccumulator >= interval) {
-        this.spawnAccumulator -= interval;
+      this.spawnAcc += dt * density;
+      while (this.spawnAcc >= 0.55) {
+        this.spawnAcc -= 0.55;
         this.spawnMeteor();
       }
     }
 
-    // Meteors
     for (let i = this.meteors.length - 1; i >= 0; i--) {
       const m = this.meteors[i];
       m.x += m.vx * dt;
       m.y += m.vy * dt;
       m.life += dt;
 
-      if (m.fireball && Math.random() < 0.55) this.spawnEmber(m);
+      if (m.fireball && this.sparks.length < 150 && Math.random() < 0.5) {
+        this.sparks.push({
+          x: m.x,
+          y: m.y,
+          vx: (Math.random() - 0.5) * 60 - m.vx * 0.04,
+          vy: (Math.random() - 0.5) * 60 - m.vy * 0.04,
+          life: 0,
+          maxLife: 0.5 + Math.random() * 0.6,
+          size: 0.7 + Math.random() * 1.4,
+        });
+      }
 
-      const off = m.x < -400 || m.y > this.h + 400 || m.life > m.maxLife;
-      if (off) this.meteors.splice(i, 1);
+      if (m.x < -400 || m.y > this.h + 400 || m.life > m.maxLife) this.meteors.splice(i, 1);
     }
+  }
 
-    // Embers
-    for (let i = this.embers.length - 1; i >= 0; i--) {
-      const e = this.embers[i];
-      e.x += e.vx * dt;
-      e.y += e.vy * dt;
-      e.vy += 14 * dt; // gentle gravity
-      e.vx *= 0.98;
-      e.life += dt;
-      if (e.life >= e.maxLife) this.embers.splice(i, 1);
+  private updateSparks(dt: number): void {
+    for (let i = this.sparks.length - 1; i >= 0; i--) {
+      const p = this.sparks[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 150 * dt;
+      p.vx *= 0.97;
+      p.life += dt;
+      if (p.life >= p.maxLife) this.sparks.splice(i, 1);
     }
+  }
 
-    // Twinkle
-    for (const s of this.stars) {
-      s.phase += s.twinkleRate * dt;
+  private updateShocks(dt: number): void {
+    for (let i = this.shocks.length - 1; i >= 0; i--) {
+      const s = this.shocks[i];
+      s.life += dt;
+      s.r = 8 + (s.life / s.maxLife) * 190;
+      if (s.life >= s.maxLife) this.shocks.splice(i, 1);
     }
-
-    void now;
   }
 
   private spawnMeteor(): void {
-    // Fan out from the radiant, heading down-left.
-    const spread = 0.5;
-    const angle = Math.PI * 0.78 + (Math.random() - 0.5) * spread;
-    const fireball = Math.random() < 0.12;
-    const speed = (fireball ? 320 : 460) + Math.random() * 320;
-
-    // Start somewhere along a line sweeping across the top / right edges.
+    const angle = Math.PI * 0.78 + (Math.random() - 0.5) * 0.5;
+    const fireball = Math.random() < 0.13;
+    const speed = (fireball ? 320 : 470) + Math.random() * 320;
     const t = Math.random();
-    const startX = this.radiantX - t * this.w * 1.5;
-    const startY = this.radiantY + t * this.h * 0.55 + Math.random() * this.h * 0.3;
 
     this.meteors.push({
-      x: startX,
-      y: startY,
+      x: this.radiantX - t * this.w * 1.5,
+      y: this.radiantY + t * this.h * 0.55 + Math.random() * this.h * 0.3,
       vx: Math.cos(angle) * speed,
       vy: Math.abs(Math.sin(angle)) * speed,
       len: fireball ? 150 + Math.random() * 130 : 70 + Math.random() * 110,
@@ -319,91 +386,217 @@ export class StarfieldComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private spawnEmber(m: Meteor): void {
-    if (this.embers.length > 140) return;
-    this.embers.push({
-      x: m.x,
-      y: m.y,
-      vx: (Math.random() - 0.5) * 60 - m.vx * 0.04,
-      vy: (Math.random() - 0.5) * 60 - m.vy * 0.04,
-      life: 0,
-      maxLife: 0.5 + Math.random() * 0.7,
-      size: 0.7 + Math.random() * 1.5,
-    });
+  /** Click ripple: a ring that shoves the network plus a spark burst. */
+  private shock(x: number, y: number): void {
+    if (this.theme.reducedMotion()) return;
+    this.shocks.push({ x, y, life: 0, maxLife: 0.62, r: 8 });
+
+    const n = Math.round(18 * this.raf.quality());
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
+      const s = 100 + Math.random() * 240;
+      this.sparks.push({
+        x,
+        y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: 0,
+        maxLife: 0.34 + Math.random() * 0.4,
+        size: 1 + Math.random() * 2.2,
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
 
-  private render(now: number): void {
+  private render(dt: number): void {
     const ctx = this.ctx;
     if (!ctx) return;
 
     ctx.clearRect(0, 0, this.w, this.h);
 
-    this.drawStars(ctx, now);
-    this.drawMeteors(ctx);
-    this.drawEmbers(ctx);
+    const accent = this.theme.accentRgb();
+    const alt = this.theme.accentAltRgb();
+
+    this.drawStars(ctx, accent);
+    this.drawLinks(ctx, accent);
+    this.drawNodes(ctx, accent);
+    this.drawMeteors(ctx, accent, alt);
+    this.drawSparks(ctx, accent, alt);
+    this.drawShocks(ctx, accent);
+
+    void dt;
   }
 
-  private drawStars(ctx: CanvasRenderingContext2D, now: number): void {
+  /**
+   * Stars, batched into alpha bands.
+   *
+   * One path per band rather than per star: ~12 draw calls instead of ~600
+   * fillStyle writes and path builds.
+   */
+  private drawStars(ctx: CanvasRenderingContext2D, accent: string): void {
     const cx = this.w / 2;
     const cy = this.h / 2;
-    const px = (this.pointerX - cx) || 0;
-    const py = (this.pointerY - cy) || 0;
+    const px = this.mx > -9000 ? this.mx - cx : 0;
+    const py = this.my > -9000 ? this.my - cy : 0;
 
-    for (const s of this.stars) {
-      // Deeper stars move less — that difference is what sells the depth.
+    // Buckets hold indices, not Star references, so no per-frame Map or
+    // object lookups are needed. The scratch arrays are reused across frames.
+    this.ensureScratch();
+    const warm = this.warmBuckets;
+    const cool = this.coolBuckets;
+    for (let b = 0; b < ALPHA_BUCKETS; b++) {
+      warm[b].length = 0;
+      cool[b].length = 0;
+    }
+
+    const sx = this.sx;
+    const sy = this.sy;
+
+    for (let i = 0; i < this.stars.length; i++) {
+      const s = this.stars[i];
       const par = 0.25 + s.depth * 0.75;
-      const ox = -px * 0.012 * par;
-      const oy = -py * 0.012 * par - this.scrollY * 0.06 * par;
 
-      let y = (s.y + oy) % this.h;
-      if (y < 0) y += this.h;
-      let x = (s.x + ox) % this.w;
+      let x = (s.x - px * 0.012 * par) % this.w;
       if (x < 0) x += this.w;
+      let y = (s.y - py * 0.012 * par - this.scrollY * 0.06 * par) % this.h;
+      if (y < 0) y += this.h;
 
-      const tw = 0.65 + 0.35 * Math.sin(s.phase);
-      const a = s.alpha * tw;
+      sx[i] = x;
+      sy[i] = y;
 
-      // Warm the brighter stars toward the red identity.
-      ctx.fillStyle =
-        s.depth > 0.72
-          ? `rgba(255, ${Math.round(190 - s.depth * 55)}, ${Math.round(185 - s.depth * 60)}, ${a.toFixed(3)})`
-          : `rgba(255, 246, 246, ${(a * 0.8).toFixed(3)})`;
+      const a = s.alpha * (0.65 + 0.35 * Math.sin(s.phase));
+      const bucket = Math.min(ALPHA_BUCKETS - 1, Math.max(0, Math.floor(a * ALPHA_BUCKETS)));
+      (s.depth > 0.72 ? warm : cool)[bucket].push(i);
+    }
 
-      if (s.r <= 0.9) {
-        // fillRect is measurably cheaper than arc() for sub-pixel dots.
-        ctx.fillRect(x, y, s.r * 2, s.r * 2);
-      } else {
+    for (let b = 0; b < ALPHA_BUCKETS; b++) {
+      const a = ((b + 0.5) / ALPHA_BUCKETS).toFixed(2);
+
+      if (cool[b].length) {
+        ctx.fillStyle = `rgba(255, 250, 250, ${a})`;
         ctx.beginPath();
-        ctx.arc(x, y, s.r, 0, Math.PI * 2);
+        for (const i of cool[b]) {
+          const size = this.stars[i].r * 1.9;
+          ctx.rect(sx[i], sy[i], size, size);
+        }
+        ctx.fill();
+      }
+
+      if (warm[b].length) {
+        ctx.fillStyle = `rgba(${accent}, ${a})`;
+        ctx.beginPath();
+        for (const i of warm[b]) {
+          const size = this.stars[i].r * 2.1;
+          ctx.rect(sx[i], sy[i], size, size);
+        }
         ctx.fill();
       }
     }
-    void now;
   }
 
-  private drawMeteors(ctx: CanvasRenderingContext2D): void {
+  private warmBuckets: number[][] = [];
+  private coolBuckets: number[][] = [];
+  private linkBands: number[][] = [];
+  private sx: number[] = [];
+  private sy: number[] = [];
+
+  private ensureScratch(): void {
+    if (this.warmBuckets.length === ALPHA_BUCKETS) return;
+    this.warmBuckets = Array.from({ length: ALPHA_BUCKETS }, () => []);
+    this.coolBuckets = Array.from({ length: ALPHA_BUCKETS }, () => []);
+  }
+
+  /** Constellation lines: node-to-node, plus node-to-cursor. */
+  private drawLinks(ctx: CanvasRenderingContext2D, accent: string): void {
+    if (this.raf.quality() < 0.5) return;
+
+    const link = 132;
+    const link2 = link * link;
+    const cursorLink = 210;
+    const cursorLink2 = cursorLink * cursorLink;
+
+    // Line opacity is bucketed too, so each strength band is a single stroked
+    // path. Band arrays are flat index pairs reused across frames — no
+    // per-frame allocation in the hot loop.
+    if (this.linkBands.length !== 4) {
+      this.linkBands = Array.from({ length: 4 }, () => [] as number[]);
+    }
+    const bands = this.linkBands;
+    for (let b = 0; b < 4; b++) bands[b].length = 0;
+
+    const nodes = this.nodes;
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 > link2) continue;
+
+        const band = Math.min(3, Math.floor((1 - d2 / link2) * 4));
+        bands[band].push(i, j);
+      }
+    }
+
+    for (let band = 0; band < 4; band++) {
+      const list = bands[band];
+      if (!list.length) continue;
+      ctx.strokeStyle = `rgba(${accent}, ${(0.05 + band * 0.055).toFixed(3)})`;
+      ctx.lineWidth = 0.6 + band * 0.2;
+      ctx.beginPath();
+      for (let k = 0; k < list.length; k += 2) {
+        const a = nodes[list[k]];
+        const b = nodes[list[k + 1]];
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+      }
+      ctx.stroke();
+    }
+
+    // Lines reaching out to the cursor — the bit that makes it feel alive.
+    if (this.mx > -9000) {
+      ctx.strokeStyle = `rgba(${accent}, 0.3)`;
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      let drawn = 0;
+      for (const n of this.nodes) {
+        const dx = n.x - this.mx;
+        const dy = n.y - this.my;
+        if (dx * dx + dy * dy > cursorLink2) continue;
+        ctx.moveTo(this.mx, this.my);
+        ctx.lineTo(n.x, n.y);
+        if (++drawn > 14) break;
+      }
+      ctx.stroke();
+    }
+  }
+
+  private drawNodes(ctx: CanvasRenderingContext2D, accent: string): void {
+    ctx.fillStyle = `rgba(${accent}, 0.55)`;
+    ctx.beginPath();
+    for (const n of this.nodes) {
+      ctx.moveTo(n.x + n.r, n.y);
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
+  private drawMeteors(ctx: CanvasRenderingContext2D, accent: string, alt: string): void {
     for (const m of this.meteors) {
       const speed = Math.hypot(m.vx, m.vy) || 1;
       const tailX = m.x - (m.vx / speed) * m.len;
       const tailY = m.y - (m.vy / speed) * m.len;
-
-      // Fade in fast, fade out over the tail of its life.
       const fade = Math.min(1, m.life * 6) * Math.max(0, 1 - m.life / m.maxLife);
 
       const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
-      if (m.fireball) {
-        grad.addColorStop(0, `rgba(255, 246, 232, ${0.95 * fade})`);
-        grad.addColorStop(0.18, `rgba(255, 168, 96, ${0.8 * fade})`);
-        grad.addColorStop(0.55, `rgba(255, 60, 60, ${0.34 * fade})`);
-      } else {
-        grad.addColorStop(0, `rgba(255, 238, 238, ${0.92 * fade})`);
-        grad.addColorStop(0.3, `rgba(255, 90, 90, ${0.5 * fade})`);
-      }
-      grad.addColorStop(1, 'rgba(255, 60, 60, 0)');
+      grad.addColorStop(0, `rgba(255, 252, 250, ${0.95 * fade})`);
+      grad.addColorStop(m.fireball ? 0.2 : 0.3, `rgba(${alt}, ${0.7 * fade})`);
+      grad.addColorStop(0.6, `rgba(${accent}, ${0.3 * fade})`);
+      grad.addColorStop(1, `rgba(${accent}, 0)`);
 
       ctx.strokeStyle = grad;
       ctx.lineWidth = m.width;
@@ -413,34 +606,36 @@ export class StarfieldComponent implements AfterViewInit, OnDestroy {
       ctx.lineTo(tailX, tailY);
       ctx.stroke();
 
-      // Hot head.
-      const headR = m.width * (m.fireball ? 2.4 : 1.5);
-      const hg = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, headR * 4);
-      hg.addColorStop(0, `rgba(255, 250, 244, ${0.95 * fade})`);
-      hg.addColorStop(0.4, `rgba(255, ${m.fireball ? 150 : 90}, 80, ${0.42 * fade})`);
-      hg.addColorStop(1, 'rgba(255, 60, 60, 0)');
+      const headR = m.width * (m.fireball ? 2.4 : 1.5) * 4;
+      const hg = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, headR);
+      hg.addColorStop(0, `rgba(255, 253, 250, ${0.95 * fade})`);
+      hg.addColorStop(0.4, `rgba(${alt}, ${0.4 * fade})`);
+      hg.addColorStop(1, `rgba(${accent}, 0)`);
       ctx.fillStyle = hg;
       ctx.beginPath();
-      ctx.arc(m.x, m.y, headR * 4, 0, Math.PI * 2);
+      ctx.arc(m.x, m.y, headR, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  private drawEmbers(ctx: CanvasRenderingContext2D): void {
-    for (const e of this.embers) {
-      const a = Math.max(0, 1 - e.life / e.maxLife);
-      ctx.fillStyle = `rgba(255, ${Math.round(140 + a * 90)}, 90, ${(a * 0.8).toFixed(3)})`;
+  private drawSparks(ctx: CanvasRenderingContext2D, accent: string, alt: string): void {
+    for (const p of this.sparks) {
+      const a = Math.max(0, 1 - p.life / p.maxLife);
+      ctx.fillStyle = a > 0.6 ? `rgba(${alt}, ${a})` : `rgba(${accent}, ${a * 0.85})`;
       ctx.beginPath();
-      ctx.arc(e.x, e.y, e.size * a, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  /** A single still frame for reduced-motion visitors. */
-  private drawStatic(): void {
-    const ctx = this.ctx;
-    if (!ctx) return;
-    ctx.clearRect(0, 0, this.w, this.h);
-    this.drawStars(ctx, 0);
+  private drawShocks(ctx: CanvasRenderingContext2D, accent: string): void {
+    for (const s of this.shocks) {
+      const t = s.life / s.maxLife;
+      ctx.strokeStyle = `rgba(${accent}, ${(1 - t) * 0.7})`;
+      ctx.lineWidth = 2.4 * (1 - t) + 0.4;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
 }

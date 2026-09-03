@@ -3,11 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  NgZone,
   OnDestroy,
   inject,
   viewChild,
 } from '@angular/core';
+import { RafService } from '../../services/raf.service';
 import { ThemeService } from '../../services/theme.service';
 
 /**
@@ -43,15 +43,16 @@ import { ThemeService } from '../../services/theme.service';
 export class CursorComponent implements AfterViewInit, OnDestroy {
   private readonly dotRef = viewChild.required<ElementRef<HTMLElement>>('dot');
   private readonly ringRef = viewChild.required<ElementRef<HTMLElement>>('ring');
-  private readonly zone = inject(NgZone);
+  private readonly raf = inject(RafService);
   private readonly theme = inject(ThemeService);
 
   private x = -100;
   private y = -100;
   private rx = -100;
   private ry = -100;
-  private raf = 0;
+  private stop?: () => void;
   private active = false;
+  private lastHot = false;
 
   private readonly onMove = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse') return;
@@ -64,10 +65,21 @@ export class CursorComponent implements AfterViewInit, OnDestroy {
     }
 
     // Interactive targets get a wider, hotter reticle.
-    const t = e.target as HTMLElement | null;
-    const hot = !!t?.closest('a, button, .badge, [role="radio"], input, .card');
-    this.ringRef().nativeElement.classList.toggle('hot', hot);
+    //
+    // `target` is NOT guaranteed to be an Element — it can be `window` or
+    // `document`, neither of which has `closest`. Calling it blindly threw on
+    // every single pointer move, and an exception per mouse move means Angular
+    // captures a stack trace per mouse move, which is ruinous for performance.
+    const t = e.target;
+    const hot = t instanceof Element && !!t.closest(CursorComponent.HOT_SELECTOR);
+    if (hot !== this.lastHot) {
+      this.lastHot = hot;
+      this.ringRef().nativeElement.classList.toggle('hot', hot);
+    }
   };
+
+  private static readonly HOT_SELECTOR =
+    'a, button, .badge, [role="radio"], input, .card, label';
 
   private readonly onDown = () => this.ringRef().nativeElement.classList.add('down');
   private readonly onUp = () => this.ringRef().nativeElement.classList.remove('down');
@@ -85,18 +97,18 @@ export class CursorComponent implements AfterViewInit, OnDestroy {
     if (this.theme.reducedMotion()) return;
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    this.zone.runOutsideAngular(() => {
-      window.addEventListener('pointermove', this.onMove, { passive: true });
-      window.addEventListener('pointerdown', this.onDown, { passive: true });
-      window.addEventListener('pointerup', this.onUp, { passive: true });
-      document.addEventListener('mouseleave', this.onLeave);
-      document.addEventListener('mouseenter', this.onEnter);
-      this.raf = requestAnimationFrame(() => this.tick());
-    });
+    window.addEventListener('pointermove', this.onMove, { passive: true });
+    window.addEventListener('pointerdown', this.onDown, { passive: true });
+    window.addEventListener('pointerup', this.onUp, { passive: true });
+    document.addEventListener('mouseleave', this.onLeave);
+    document.addEventListener('mouseenter', this.onEnter);
+
+    // Shares the application-wide frame loop rather than starting a third one.
+    this.stop = this.raf.add((dt) => this.tick(dt));
   }
 
   ngOnDestroy(): void {
-    if (this.raf) cancelAnimationFrame(this.raf);
+    this.stop?.();
     window.removeEventListener('pointermove', this.onMove);
     window.removeEventListener('pointerdown', this.onDown);
     window.removeEventListener('pointerup', this.onUp);
@@ -105,16 +117,18 @@ export class CursorComponent implements AfterViewInit, OnDestroy {
     document.documentElement.classList.remove('has-cursor');
   }
 
-  private tick(): void {
+  private tick(dt: number): void {
+    if (!this.active) return;
+
     // The dot is exact; the ring eases toward it, which produces the lag.
-    this.rx += (this.x - this.rx) * 0.18;
-    this.ry += (this.y - this.ry) * 0.18;
+    // Framerate-independent easing so the feel is identical at 60 and 144Hz.
+    const k = Math.min(1, dt * 11);
+    this.rx += (this.x - this.rx) * k;
+    this.ry += (this.y - this.ry) * k;
 
     this.dotRef().nativeElement.style.transform =
       `translate3d(${this.x}px, ${this.y}px, 0) translate(-50%, -50%)`;
     this.ringRef().nativeElement.style.transform =
-      `translate3d(${this.rx.toFixed(2)}px, ${this.ry.toFixed(2)}px, 0) translate(-50%, -50%)`;
-
-    this.raf = requestAnimationFrame(() => this.tick());
+      `translate3d(${this.rx.toFixed(1)}px, ${this.ry.toFixed(1)}px, 0) translate(-50%, -50%)`;
   }
 }

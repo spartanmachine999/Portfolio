@@ -24,22 +24,28 @@
       <p class="lede">{{ data.intro }}</p>
 
       <div class="hero-links">
-        <button type="button" class="btn btn-primary play-btn" (click)="playGame.emit()">
-          <span class="pico" aria-hidden="true"></span>
-          <span>Play the game</span>
-        </button>
-        <a class="btn" [href]="data.contact.resume" download>Résumé</a>
+        <a class="btn btn-primary" [href]="data.contact.resume" download>Résumé</a>
         <a class="btn" [href]="data.contact.linkedin" target="_blank" rel="noopener noreferrer">
           LinkedIn
         </a>
         <a class="btn btn-ghost" [href]="'mailto:' + data.contact.email">Email</a>
+
+        <!-- No label. Curiosity is the point. -->
+        <button
+          type="button"
+          class="btn mystery"
+          (click)="playGame.emit()"
+          aria-label="Launch mini game"
+        >
+          <span class="emoji" aria-hidden="true">🚀</span>
+          <span class="rock emoji" aria-hidden="true">☄</span>
+        </button>
       </div>
 
       <p class="keys mono">
         <button type="button" class="kbtn" (click)="openPalette.emit()">
           <kbd>Ctrl</kbd><kbd>K</kbd> commands
         </button>
-        <span><kbd>G</kbd> game</span>
         <span><kbd>T</kbd> theme</span>
         <span><kbd>M</kbd> sound</span>
       </p>

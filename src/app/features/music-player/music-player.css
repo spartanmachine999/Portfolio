@@ -1,0 +1,321 @@
+.player {
+  position: fixed;
+  left: clamp(12px, 2vw, 24px);
+  bottom: clamp(12px, 2vw, 24px);
+  z-index: 82;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ---- Handle ---- */
+.handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 15px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(150deg, var(--surface-2), var(--surface));
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--accent-line);
+  transition: all var(--dur) var(--ease);
+  max-width: 60vw;
+}
+
+.handle:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 34px -12px var(--glow);
+}
+
+.handle-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Bouncing equaliser icon ---- */
+.eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  flex: none;
+}
+
+.eq i {
+  width: 2.5px;
+  height: 30%;
+  border-radius: 1px;
+  background: var(--accent);
+  transition: height 0.2s var(--ease);
+}
+
+.eq.live i {
+  animation: bounce 0.9s ease-in-out infinite;
+}
+
+.eq.live i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.eq.live i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.eq.live i:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    height: 22%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+
+/* ---- Panel ---- */
+.panel {
+  width: 252px;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(170deg, var(--surface-2), var(--bg));
+  box-shadow: 0 22px 60px -24px rgba(0, 0, 0, 0.95);
+  transform-origin: bottom left;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px) scale(0.95);
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease),
+    visibility var(--dur);
+  order: -1;
+}
+
+.player.open .panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* ---- Now playing ---- */
+.now {
+  margin: 0 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nm {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.vb {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* ---- Visualiser ---- */
+.viz {
+  width: 100%;
+  height: 42px;
+  display: block;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.32);
+}
+
+/* ---- Controls ---- */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.ct {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.ct:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.ct.big {
+  width: 38px;
+  height: 38px;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Play triangle */
+.play {
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid var(--accent);
+}
+
+/* Pause bars */
+.pause {
+  display: flex;
+  gap: 3px;
+}
+
+.pause i {
+  width: 3px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* Skip triangles */
+.prev,
+.next {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+.next {
+  border-left: 8px solid var(--text-dim);
+}
+
+.prev {
+  border-right: 8px solid var(--text-dim);
+}
+
+.ct:hover .next {
+  border-left-color: var(--accent);
+}
+
+.ct:hover .prev {
+  border-right-color: var(--accent);
+}
+
+/* ---- Volume ---- */
+.vol {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Slider chrome lives in styles.css — see `input[type='range']`. */
+
+/* ---- Track list ---- */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.list button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-align: left;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.list button:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.list button.on {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ix {
+  font-size: 0.6rem;
+  color: var(--text-mute);
+  flex: none;
+}
+
+.tn {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bpm {
+  font-size: 0.58rem;
+  color: var(--text-mute);
+  flex: none;
+}
+
+.disclaimer {
+  margin: 11px 0 0;
+  font-size: 0.58rem;
+  line-height: 1.5;
+  color: var(--text-mute);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 560px) {
+  .player {
+    left: 10px;
+    bottom: 10px;
+  }
+
+  .panel {
+    width: min(250px, calc(100vw - 24px));
+  }
+
+  .handle {
+    padding: 8px 12px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq.live i {
+    animation: none;
+    height: 55%;
+  }
+}
+
+@media print {
+  .player {
+    display: none;
+  }
+}

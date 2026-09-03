@@ -8,10 +8,10 @@ import {
   signal,
 } from '@angular/core';
 import { AsteroidGameComponent } from './features/asteroid-game/asteroid-game';
-import { ClickFxComponent } from './features/click-fx/click-fx';
 import { CommandPaletteComponent } from './features/command-palette/command-palette';
 import { ControlDockComponent } from './features/control-dock/control-dock';
 import { CursorComponent } from './features/cursor/cursor';
+import { MusicPlayerComponent } from './features/music-player/music-player';
 import { ScrollProgressComponent } from './features/scroll-progress/scroll-progress';
 import { StarfieldComponent } from './features/starfield/starfield';
 import { FooterComponent } from './layout/footer/footer';
@@ -45,7 +45,7 @@ const KONAMI = [
     StarfieldComponent,
     ScrollProgressComponent,
     CursorComponent,
-    ClickFxComponent,
+    MusicPlayerComponent,
     HeaderComponent,
     HeroComponent,
     AboutComponent,
@@ -95,7 +95,8 @@ export class App implements OnInit, OnDestroy {
     }
     if (!seen) {
       this.toastTimer = window.setTimeout(() => {
-        this.showToast('Press Ctrl+K for commands, or G to play');
+        // Deliberately doesn't mention the game. Finding it is the fun part.
+        this.showToast('Press Ctrl+K to explore');
         try {
           sessionStorage.setItem('ms-hinted', '1');
         } catch {
@@ -180,7 +181,8 @@ export class App implements OnInit, OnDestroy {
         break;
       case 't':
       case 'T':
-        this.showToast('Mode: ' + this.theme.cycle());
+        this.theme.cycle();
+        this.showToast(this.theme.label() + ' — ' + this.themeHint(), 2400);
         this.audio.play('blip');
         break;
       case 'm':
@@ -214,6 +216,10 @@ export class App implements OnInit, OnDestroy {
   }
 
   private konamiSeq = 0;
+
+  private themeHint(): string {
+    return this.theme.options.find((o) => o.id === this.theme.mode())?.hint ?? '';
+  }
 
   private toggleOverdrive(): void {
     const on = !this.overdrive();

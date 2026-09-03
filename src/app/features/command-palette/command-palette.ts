@@ -10,6 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
+import { MusicService } from '../../services/music.service';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService, ThemeMode } from '../../services/theme.service';
 
@@ -44,6 +45,7 @@ export class CommandPaletteComponent {
 
   private readonly theme = inject(ThemeService);
   private readonly audio = inject(AudioService);
+  private readonly music = inject(MusicService);
   private readonly data = inject(PortfolioDataService);
   private readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
 
@@ -95,36 +97,26 @@ export class CommandPaletteComponent {
       run: () => this.jump('skills'),
     },
     {
-      id: 'inferno',
-      label: 'Mode: Inferno',
-      group: 'Appearance',
-      hint: 'bright',
-      keywords: 'theme colour color red bright default',
-      run: () => this.setTheme('inferno'),
-    },
-    {
-      id: 'crimson',
-      label: 'Mode: Crimson',
-      group: 'Appearance',
-      hint: 'deep',
-      keywords: 'theme colour color dark deep moody',
-      run: () => this.setTheme('crimson'),
-    },
-    {
-      id: 'void',
-      label: 'Mode: Void',
-      group: 'Appearance',
-      hint: 'calm',
-      keywords: 'theme colour color calm quiet minimal no meteors performance',
-      run: () => this.setTheme('void'),
-    },
-    {
       id: 'sound',
-      label: 'Toggle Sound',
+      label: 'Toggle UI Sound',
       group: 'Appearance',
       hint: 'M',
-      keywords: 'audio mute volume music sfx',
+      keywords: 'audio mute volume sfx beep click',
       run: () => this.audio.toggle(),
+    },
+    {
+      id: 'music',
+      label: 'Play / Pause Music',
+      group: 'Fun',
+      keywords: 'music song track daft punk house disco beat player',
+      run: () => this.music.toggle(),
+    },
+    {
+      id: 'nexttrack',
+      label: 'Next Track',
+      group: 'Fun',
+      keywords: 'music skip song forward',
+      run: () => this.music.next(),
     },
     {
       id: 'resume',
@@ -149,10 +141,22 @@ export class CommandPaletteComponent {
     },
   ];
 
+  /** Theme entries are generated so adding a theme needs no change here. */
+  private readonly themeCommands: Command[] = this.theme.options.map((o) => ({
+    id: 'theme-' + o.id,
+    label: 'Theme: ' + o.label,
+    group: 'Appearance',
+    hint: o.hint,
+    keywords: `theme colour color palette dark ${o.label} ${o.hint}`,
+    run: () => this.setTheme(o.id),
+  }));
+
+  private readonly all = [...this.commands, ...this.themeCommands];
+
   readonly filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
-    if (!q) return this.commands;
-    return this.commands.filter((c) => this.matches(q, c));
+    if (!q) return this.all;
+    return this.all.filter((c) => this.matches(q, c));
   });
 
   constructor() {

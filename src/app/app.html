@@ -3,7 +3,6 @@
 <app-starfield />
 <app-scroll-progress />
 <app-cursor />
-<app-click-fx />
 <span class="crt-band" aria-hidden="true"></span>
 
 <app-header />
@@ -32,19 +31,19 @@
 <app-footer />
 
 <app-control-dock (launchGame)="openGame()" />
+<app-music-player />
 
-<!-- Floating always-visible launcher. The dock alone hid the game behind a
-     collapsed panel, which meant nobody found it. -->
-<button
-  type="button"
-  class="game-fab"
-  (click)="openGame()"
-  aria-label="Play Meteor Defense mini game"
->
-  <span class="fab-ico" aria-hidden="true">
-    <span class="ship"></span>
-  </span>
-  <span class="fab-label">Play</span>
+<!-- Unlabelled on purpose: the rocket and asteroid are the whole invitation.
+     The aria-label still describes it properly for screen readers, who can't
+     "explore" a mystery button. -->
+<button type="button" class="game-fab" (click)="openGame()" aria-label="Launch mini game">
+  <!-- Literal character, not &#128640;. Numeric entities above U+FFFF get
+       truncated to 16 bits here, producing U+F680 (a Private Use Area glyph
+       that renders as tofu) instead of the rocket. -->
+  <span class="fab-rocket emoji" aria-hidden="true">🚀</span>
+  <!-- Comet glyph comes from .fab-rock::before so it can counter-rotate
+       inside the orbiting wrapper. Intentionally empty. -->
+  <span class="fab-rock emoji" aria-hidden="true"></span>
   <span class="fab-pulse" aria-hidden="true"></span>
 </button>
 

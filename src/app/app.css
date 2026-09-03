@@ -6,27 +6,26 @@
 
 /* --------------------------------------------------------------------------
    Floating game launcher
-   Sits left of the control dock so the two never overlap.
+   Unlabelled and circular. Sits above the control dock so they never overlap.
    -------------------------------------------------------------------------- */
 .game-fab {
   position: fixed;
   right: clamp(12px, 2vw, 24px);
-  bottom: calc(clamp(12px, 2vw, 24px) + 52px);
+  bottom: calc(clamp(12px, 2vw, 24px) + 54px);
   z-index: 81;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 16px 10px 12px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--accent);
-  background: linear-gradient(140deg, rgba(255, 60, 60, 0.22), rgba(20, 6, 8, 0.94));
-  backdrop-filter: blur(8px);
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  box-shadow: 0 10px 30px -10px var(--glow), 0 0 0 1px rgba(255, 60, 60, 0.2);
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-line);
+  background: radial-gradient(
+    circle at 30% 25%,
+    color-mix(in srgb, var(--accent) 26%, transparent),
+    var(--surface) 70%
+  );
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px -10px var(--glow);
   transition:
     transform var(--dur) var(--ease-out-back),
     box-shadow var(--dur) var(--ease),
@@ -35,32 +34,52 @@
 
 .game-fab:hover,
 .game-fab:focus-visible {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 16px 40px -10px var(--glow-hard);
+  transform: translateY(-3px) scale(1.08);
+  border-color: var(--accent);
+  box-shadow: 0 16px 42px -10px var(--glow-hard);
 }
 
-/* Little ship glyph, drawn in CSS */
-.fab-ico {
-  position: relative;
-  width: 18px;
-  height: 18px;
-  display: grid;
-  place-items: center;
+.fab-rocket {
+  font-size: 1.35rem;
+  line-height: 1;
+  /* Emoji don't inherit colour, so tilt + glow is how it reads as "active". */
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 0 6px var(--glow));
+  transition: transform var(--dur) var(--ease-out-back);
 }
 
-.ship {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 12px solid var(--accent);
-  filter: drop-shadow(0 0 5px var(--glow));
-  animation: hover-ship 1.9s ease-in-out infinite;
+.game-fab:hover .fab-rocket {
+  transform: rotate(-12deg) translateY(-3px) scale(1.1);
 }
 
-@keyframes hover-ship {
-  50% {
-    transform: translateY(-2.5px);
+/* Asteroid orbits the rocket. Two nested rotations: the wrapper spins, the
+   emoji counter-spins so it never appears upside down. */
+.fab-rock {
+  position: absolute;
+  inset: 0;
+  font-size: 0.82rem;
+  line-height: 1;
+  animation: orbit 6s linear infinite;
+}
+
+.fab-rock::before {
+  content: '\2604';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: counter-orbit 6s linear infinite;
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes counter-orbit {
+  to {
+    transform: translateX(-50%) rotate(-360deg);
   }
 }
 
@@ -68,41 +87,46 @@
 .fab-pulse {
   position: absolute;
   inset: -1px;
-  border-radius: inherit;
+  border-radius: 50%;
   border: 1px solid var(--accent);
   pointer-events: none;
-  animation: fab-ping 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: fab-ping 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 @keyframes fab-ping {
   0% {
-    opacity: 0.7;
+    opacity: 0.65;
     transform: scale(1);
   }
   70%,
   100% {
     opacity: 0;
-    transform: scale(1.28);
+    transform: scale(1.45);
   }
 }
 
 @media (max-width: 520px) {
   .game-fab {
-    padding: 9px 13px 9px 10px;
-    font-size: 0.7rem;
+    width: 46px;
+    height: 46px;
     bottom: calc(10px + 48px);
     right: 10px;
+  }
+
+  .fab-rocket {
+    font-size: 1.15rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ship,
+  .fab-rock,
+  .fab-rock::before,
   .fab-pulse {
     animation: none;
   }
 
   .fab-pulse {
-    opacity: 0.35;
+    opacity: 0.3;
   }
 }
 

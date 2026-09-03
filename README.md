@@ -111,28 +111,73 @@ src/
 
 ## Features
 
-- **Meteor shower background** on a single canvas. Meteors radiate from one
-  point like a real shower, over a three-layer parallax starfield that responds
-  to cursor and scroll. Pauses when the tab is hidden.
-- **Three colour modes** — Inferno, Crimson, Void — all red on black. Void turns
-  the meteors off, which doubles as a low-distraction / low-power mode. Choice
-  is remembered.
-- **Meteor Defense**, a mini-game. Keyboard or touch. High score is remembered.
-  Lazy-loaded, so it costs nothing until opened.
-- **Sound**, synthesized at runtime rather than shipped as audio files. Off by
-  default.
-- **Live clock** in the control dock.
-- **Scroll-triggered reveals** throughout, plus a reading progress bar.
+- **Interactive background** on a single canvas: a parallax starfield, a
+  constellation network that recoils from your cursor and draws lines toward it,
+  a meteor shower radiating from one point like the real thing, and shockwave
+  rings that shove the network when you click.
+- **Six dark themes** — Inferno, Cyber, Synth, Acid, Solar, Void — each with its
+  own accent, surfaces and ambient wash, not just a different highlight colour.
+  Choice is remembered.
+- **Music player** with four original French-house loops synthesized live in the
+  browser, plus a spectrum visualiser. See the note below.
+- **Command palette** on `Ctrl+K`, covering navigation, themes, music, contact
+  and the game. Substring and subsequence matching.
+- **Custom cursor**: a precise dot plus a targeting reticle that locks on over
+  interactive elements. Mouse only; touch and reduced-motion keep the native one.
+- **A hidden mini-game.** Deliberately unlabelled.
+- **Cyberpunk layer**: CRT scanlines, vignette, rolling scan band, glitch text,
+  animated neon card borders, perspective grid floor, marquee ticker. The Konami
+  code does something.
+- **Live clock**, scroll progress bar, scroll-triggered reveals, card tilt.
 - **Fully responsive**, phone through desktop.
 
 ### Keyboard shortcuts
 
 | Key | Action |
 | --- | --- |
-| `G` | Open Meteor Defense |
-| `T` | Cycle colour mode |
-| `M` | Mute / unmute |
-| `Esc` | Close the game |
+| `Ctrl+K` or `/` | Command palette |
+| `T` | Cycle theme |
+| `M` | UI sound on/off |
+| `G` | The hidden thing |
+| `Esc` | Close any overlay |
+
+### About the music
+
+The four loops are **original compositions**, generated at runtime from
+oscillators and noise buffers. No audio files ship and no third-party licensing
+is involved. They're written in the spirit of French house — four-on-the-floor
+kick, sidechained filtered chord stabs, syncopated bass, filter sweeps — but
+they are not Daft Punk tracks and contain no samples.
+
+If you want actual Daft Punk on the site, the legal route is an embed. Add a
+Spotify iframe (Spotify handles the licensing) rather than hosting audio files.
+
+## Performance notes
+
+Worth knowing before adding more effects, because these are the things that
+made it choppy the first time round:
+
+- **One rAF loop for everything.** `RafService` owns the single
+  `requestAnimationFrame` loop; the starfield, cursor and visualiser all
+  subscribe to it. Do not start your own loop. It also exposes a `quality`
+  signal that drops on slow devices so effects can shed particles instead of
+  dropping frames.
+- **Never `mix-blend-mode` on a fullscreen overlay.** It forces the whole page
+  to recomposite every frame. The scanlines use plain alpha for this reason.
+- **Batch canvas draws.** Stars are grouped into alpha buckets so ~300 stars
+  cost ~12 draw calls rather than 300 fillStyle writes.
+- **No allocation in frame callbacks.** Scratch arrays are reused; an early
+  version built a 300-entry `Map` every frame.
+- Offscreen sections use `content-visibility: auto`.
+- Measured cost of the app's own per-frame work: about **0.45ms** of a 16.7ms
+  budget.
+
+### Gotchas
+
+- Numeric HTML entities above `U+FFFF` get truncated to 16 bits in these
+  templates — `&#128640;` produced `U+F680` (tofu) instead of the rocket. Use
+  the literal character.
+- Poppins has no emoji glyphs. Emoji need the `.emoji` class for its font stack.
 
 ---
 
